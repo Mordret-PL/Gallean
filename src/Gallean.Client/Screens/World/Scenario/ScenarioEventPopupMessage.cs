@@ -22,7 +22,20 @@ internal sealed record ScenarioEventPopupMessage(
 
         if (message.PortraitId is not null)
         {
-            string speakerName = popupText.Speaker ?? message.PortraitName ?? ResolveUnitName(message.PortraitId.Value, definitions, texts);
+            string speakerName;
+
+            if (popupText.Speaker is not null)
+            {
+                speakerName = popupText.Speaker;
+            }
+            else if (message.PortraitName is not null)
+            {
+                speakerName = message.PortraitName;
+            }
+            else
+            {
+                speakerName = ResolveUnitName(message.PortraitId.Value, definitions, texts);
+            }
 
             return new ScenarioEventPopupMessage(spans, speakerName, new AssetSpriteKey.UnitEventPortrait(message.PortraitId.Value), message.IsPortraitLeft);
         }
