@@ -2,4 +2,4 @@ using Gallean.Engine;
 
 namespace Gallean.Client;
 
-internal sealed record StartingLeaderViewModel(ScenarioLeader Leader, UnitLeaderCategory Category, string Name, string Description);
+internal sealed record StartingLeaderViewModel(UnitDefinitionId LeaderId, UnitLeaderCategory Category, string Name, string Description);

@@ -364,8 +364,8 @@ public sealed class ScenarioLoaderTests
     public void Load_S137SC0000_ConfigurationTest()
     {
         ScenarioId scenarioId = new("S137SC0000");
-        ScenarioConfiguration configuration = new([new ScenarioPlayerConfiguration(WorldRace.Elf, LordCategory.Mage, new WorldObjectVariant(2))], WorldDifficulty.Hard, Leader: null);
-        Scenario scenario = ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals, configuration, new FixedRandomProvider());
+        ScenarioConfiguration configuration = new([new ScenarioPlayerConfiguration(WorldRace.Elf, LordCategory.Mage, new WorldObjectVariant(2), null)], WorldDifficulty.Hard, Leader: null);
+        Scenario scenario = ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals, configuration);
 
         WorldPlayer expectedNeutral = new(
             new WorldPlayerId(1),
@@ -3174,8 +3174,8 @@ public sealed class ScenarioLoaderTests
             new WorldInventory([gem]),
             PendingLeaderUpgrades: 1,
             BattlesWon: 7);
-        ScenarioConfiguration configuration = new([new ScenarioPlayerConfiguration(WorldRace.Human, LordCategory.Warrior, new WorldObjectVariant(0))], WorldDifficulty.Average, scenarioLeader);
-        Scenario scenario = ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals, configuration, new FixedRandomProvider());
+        ScenarioConfiguration configuration = new([new ScenarioPlayerConfiguration(WorldRace.Human, LordCategory.Warrior, new WorldObjectVariant(0), null)], WorldDifficulty.Average, scenarioLeader);
+        Scenario scenario = ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals, configuration);
 
         UnitGrid<WorldUnit> expectedUnits = new UnitGrid<WorldUnit>.Builder()
             .Place(
@@ -3359,8 +3359,8 @@ public sealed class ScenarioLoaderTests
     public void Load_S217SC0000_ConfiguredRaceTest()
     {
         ScenarioId scenarioId = new("S217SC0000");
-        ScenarioConfiguration configuration = new([new ScenarioPlayerConfiguration(WorldRace.Human, LordCategory.Guildmaster, new WorldObjectVariant(3))], WorldDifficulty.Hard, Leader: null);
-        Scenario scenario = ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals, configuration, new FixedRandomProvider());
+        ScenarioConfiguration configuration = new([new ScenarioPlayerConfiguration(WorldRace.Human, LordCategory.Guildmaster, new WorldObjectVariant(3), null)], WorldDifficulty.Hard, Leader: null);
+        Scenario scenario = ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals, configuration);
 
         Assert.That(FormatPlayers(scenarioId, scenario.State), Is.EqualTo([
             "S217SC0000 1 Neutral G000LR0013 ai",
@@ -3373,9 +3373,9 @@ public sealed class ScenarioLoaderTests
     public void Load_S217SC0000_NeutralRaceTest()
     {
         ScenarioId scenarioId = new("S217SC0000");
-        ScenarioConfiguration configuration = new([new ScenarioPlayerConfiguration(WorldRace.Neutral, LordCategory.Warrior, new WorldObjectVariant(0))], WorldDifficulty.Average, Leader: null);
+        ScenarioConfiguration configuration = new([new ScenarioPlayerConfiguration(WorldRace.Neutral, LordCategory.Warrior, new WorldObjectVariant(0), null)], WorldDifficulty.Average, Leader: null);
 
-        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals, configuration, new FixedRandomProvider()));
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals, configuration));
 
         Assert.That(ex.Message, Is.EqualTo("Race 'Neutral' is not playable."));
     }
@@ -3384,9 +3384,9 @@ public sealed class ScenarioLoaderTests
     public void Load_S217SC0000_MissingRaceTest()
     {
         ScenarioId scenarioId = new("S217SC0000");
-        ScenarioConfiguration configuration = new([new ScenarioPlayerConfiguration(WorldRace.Undead, LordCategory.Warrior, new WorldObjectVariant(0))], WorldDifficulty.Average, Leader: null);
+        ScenarioConfiguration configuration = new([new ScenarioPlayerConfiguration(WorldRace.Undead, LordCategory.Warrior, new WorldObjectVariant(0), null)], WorldDifficulty.Average, Leader: null);
 
-        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals, configuration, new FixedRandomProvider()));
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals, configuration));
 
         Assert.That(ex.Message, Is.EqualTo("Race 'Undead' is not playable."));
     }
@@ -3397,12 +3397,12 @@ public sealed class ScenarioLoaderTests
         ScenarioId scenarioId = new("S217SC0000");
         ScenarioConfiguration configuration = new(
             [
-                new ScenarioPlayerConfiguration(WorldRace.Human, LordCategory.Mage, new WorldObjectVariant(2)),
-                new ScenarioPlayerConfiguration(WorldRace.Elf, LordCategory.Guildmaster, new WorldObjectVariant(1))
+                new ScenarioPlayerConfiguration(WorldRace.Human, LordCategory.Mage, new WorldObjectVariant(2), null),
+                new ScenarioPlayerConfiguration(WorldRace.Elf, LordCategory.Guildmaster, new WorldObjectVariant(1), null)
             ],
             WorldDifficulty.Easy,
             Leader: null);
-        Scenario scenario = ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals, configuration, new FixedRandomProvider());
+        Scenario scenario = ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals, configuration);
 
         Assert.That(FormatPlayers(scenarioId, scenario.State), Is.EqualTo([
             "S217SC0000 1 Neutral G000LR0013 ai",
@@ -3421,13 +3421,13 @@ public sealed class ScenarioLoaderTests
         ScenarioId scenarioId = new("S217SC0000");
         ScenarioConfiguration configuration = new(
             [
-                new ScenarioPlayerConfiguration(WorldRace.Human, LordCategory.Warrior, new WorldObjectVariant(0)),
-                new ScenarioPlayerConfiguration(WorldRace.Human, LordCategory.Mage, new WorldObjectVariant(1))
+                new ScenarioPlayerConfiguration(WorldRace.Human, LordCategory.Warrior, new WorldObjectVariant(0), null),
+                new ScenarioPlayerConfiguration(WorldRace.Human, LordCategory.Mage, new WorldObjectVariant(1), null)
             ],
             WorldDifficulty.Average,
             Leader: null);
 
-        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals, configuration, new FixedRandomProvider()));
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals, configuration));
 
         Assert.That(ex.Message, Is.EqualTo("Race 'Human' is configured more than once."));
     }
@@ -3438,7 +3438,7 @@ public sealed class ScenarioLoaderTests
         ScenarioId scenarioId = new("S217SC0000");
         ScenarioConfiguration configuration = new([], WorldDifficulty.Average, Leader: null);
 
-        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals, configuration, new FixedRandomProvider()));
+        InvalidOperationException ex = Assert.Throws<InvalidOperationException>(() => ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals, configuration));
 
         Assert.That(ex.Message, Is.EqualTo("Scenario configuration requires a human player."));
     }
@@ -4033,5 +4033,46 @@ public sealed class ScenarioLoaderTests
                 "Item Staff of Fumbling",
                 "Item Staff of Treecalling"
             ]));
+    }
+
+    [Test]
+    public void StartingLeaderTest()
+    {
+        ScenarioConfiguration configuration = new([new ScenarioPlayerConfiguration(WorldRace.Human, LordCategory.Warrior, new WorldObjectVariant(0), new UnitDefinitionId("G000UU0019"))], WorldDifficulty.Average, Leader: null);
+        Scenario scenario = ScenarioLoader.Create(globalDb, scenarioDb, campaignDb, new ScenarioId("S201SC0000"), definitions, globals, configuration);
+
+        UnitGrid<WorldUnit> expectedUnits = new UnitGrid<WorldUnit>.Builder()
+            .Place(
+                new WorldUnit(
+                    new WorldUnitId("S201UN0001"),
+                    new UnitDefinitionId("G000UU0019"),
+                    Hitpoints: 285,
+                    Experience: 0,
+                    Level: 10,
+                    [UnitModifier.FromFortification(new UnitModifierDefinitionId("G000UM6001"))],
+                    Name: "Godefroy",
+                    IsTypeLocked: false),
+                GridPosition.FrontCenter,
+                false)
+            .Build();
+
+        Assert.That(scenario.State.Stacks[new WorldStackId("S201KC0000")], Is.EqualTo(new WorldStack(
+            new WorldStackId("S201KC0000"),
+            new WorldPlayerId(2),
+            new WorldPosition(109, 31),
+            WorldStackDirection.SouthWest,
+            expectedUnits,
+            MovementPoints: 29,
+            WorldInventory.Empty,
+            LeaderEquipment.Empty,
+            new WorldSubraceId("S201SR0001"),
+            AiPriority: 3,
+            AiIgnore: false,
+            Concealed: false,
+            WorldStackOrder.Normal.Instance,
+            ExpirationTurn: null,
+            PendingLeaderUpgrades: 9,
+            BattlesWon: 0,
+            SourceTemplateId: null)));
     }
 }

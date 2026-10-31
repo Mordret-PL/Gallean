@@ -53,15 +53,7 @@ internal sealed partial class ScenarioConfigurationScreenViewModel : AbstractScr
         PlayerCaption = FormatPlayerCaption(raceName.Text, playerIndex, humanRaces.Length);
         IsLastPlayer = playerIndex == humanRaces.Length - 1;
 
-        if (humanRaces.Length == 1)
-        {
-            Leaders = BuildLeaders(texts, definitions, race);
-        }
-        else
-        {
-            Leaders = [];
-        }
-
+        Leaders = BuildLeaders(texts, definitions, race, scenario.SuggestedLevel);
         SelectedLordCategory = player.LordCategory;
         SelectedLeader = Leaders.Count > 0 ? Leaders[0] : null;
         SelectedDifficulty = configuration.Difficulty;
@@ -104,7 +96,7 @@ internal sealed partial class ScenarioConfigurationScreenViewModel : AbstractScr
 
         foreach (ScenarioRace race in humanRaces)
         {
-            ScenarioPlayerConfiguration playerConfiguration = new(race.Race, LordCategory.Warrior, new WorldObjectVariant(0));
+            ScenarioPlayerConfiguration playerConfiguration = new(race.Race, LordCategory.Warrior, new WorldObjectVariant(0), null);
 
             humanPlayers.Add(playerConfiguration);
         }
@@ -112,7 +104,7 @@ internal sealed partial class ScenarioConfigurationScreenViewModel : AbstractScr
         return new ScenarioConfiguration(humanPlayers.ToImmutable(), WorldDifficulty.Average, Leader: null);
     }
 
-    private static IReadOnlyList<StartingLeaderViewModel> BuildLeaders(IGameTextProvider texts, IGameDefinitionProvider definitions, WorldRace race)
+    private static IReadOnlyList<StartingLeaderViewModel> BuildLeaders(IGameTextProvider texts, IGameDefinitionProvider definitions, WorldRace race, int level)
     {
         WorldRaceDefinition raceDefinition = definitions.GetRace(race);
         List<StartingLeaderViewModel> result = [];
@@ -123,16 +115,26 @@ internal sealed partial class ScenarioConfigurationScreenViewModel : AbstractScr
 
             if (definition.LeaderCategory is UnitLeaderCategory.Fighter or UnitLeaderCategory.Explorer or UnitLeaderCategory.Mage)
             {
-                WorldUnit unit = new(UnitDetailsViewModel.PreviewUnitId, leaderId, definition.MaxHitpoints, 0, definition.Level, [], null, false);
-                ScenarioLeader leader = new(unit, LeaderEquipment.Empty, WorldInventory.Empty, PendingLeaderUpgrades: 0, BattlesWon: 0);
                 GlobalText name = texts.GetGlobalText(definition.NameTextId);
                 GlobalText description = texts.GetGlobalText(definition.DescriptionTextId);
 
-                result.Add(new StartingLeaderViewModel(leader, definition.LeaderCategory.Value, name.Text, description.Text));
+                result.Add(new StartingLeaderViewModel(leaderId, definition.LeaderCategory.Value, FormatLeaderName(name.Text, level), description.Text));
             }
         }
 
         return result;
+    }
+
+    private static string FormatLeaderName(string name, int level)
+    {
+        if (level > 1)
+        {
+            return Tr("{0} · Level {1}", name, level);
+        }
+        else
+        {
+            return name;
+        }
     }
 
     private static string FormatPlayerCaption(string raceName, int playerIndex, int playerCount)
@@ -149,13 +151,12 @@ internal sealed partial class ScenarioConfigurationScreenViewModel : AbstractScr
 
     private ScenarioConfiguration BuildConfiguration()
     {
-        ScenarioPlayerConfiguration player = new(race, SelectedLordCategory, new WorldObjectVariant(LordFaceVariant));
+        ScenarioPlayerConfiguration player = new(race, SelectedLordCategory, new WorldObjectVariant(LordFaceVariant), SelectedLeader?.LeaderId);
 
         return configuration with
         {
             HumanPlayers = configuration.HumanPlayers.SetItem(playerIndex, player),
-            Difficulty = SelectedDifficulty,
-            Leader = SelectedLeader?.Leader
+            Difficulty = SelectedDifficulty
         };
     }
 

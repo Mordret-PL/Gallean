@@ -96,8 +96,7 @@ internal sealed class GameLoader(IRandomProvider random)
                 new ScenarioId(scenarioId),
                 definitions,
                 globals,
-                configuration,
-                random),
+                configuration),
             worldState: null);
     }
 

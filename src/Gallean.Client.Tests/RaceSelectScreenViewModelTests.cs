@@ -122,7 +122,7 @@ public sealed class RaceSelectScreenViewModelTests
         Assert.That(scenarioConfiguration.IsLastPlayer, Is.True);
         Assert.That(
             scenarioConfiguration.GameConfiguration,
-            Is.EqualTo(new GameConfiguration("S200SC0000", new ScenarioConfiguration([new ScenarioPlayerConfiguration(WorldRace.Elf, LordCategory.Warrior, new WorldObjectVariant(0))], WorldDifficulty.Average, new ScenarioLeader(new WorldUnit(UnitDetailsViewModel.PreviewUnitId, new UnitDefinitionId("G000UU8009"), Hitpoints: 135, Experience: 0, Level: 1, [], null, false), LeaderEquipment.Empty, WorldInventory.Empty, PendingLeaderUpgrades: 0, BattlesWon: 0)))));
+            Is.EqualTo(new GameConfiguration("S200SC0000", new ScenarioConfiguration([new ScenarioPlayerConfiguration(WorldRace.Elf, LordCategory.Warrior, new WorldObjectVariant(0), new UnitDefinitionId("G000UU8009"))], WorldDifficulty.Average, Leader: null))));
         Assert.That(scenarioConfiguration.PortraitKey, Is.EqualTo(new AssetSpriteKey.LordFace(WorldRace.Elf, 0, IsLarge: true)));
     }
 
@@ -169,8 +169,8 @@ public sealed class RaceSelectScreenViewModelTests
                 "S200SC0000",
                 new ScenarioConfiguration(
                     [
-                        new ScenarioPlayerConfiguration(WorldRace.Undead, LordCategory.Mage, new WorldObjectVariant(1)),
-                        new ScenarioPlayerConfiguration(WorldRace.Elf, LordCategory.Guildmaster, new WorldObjectVariant(0))
+                        new ScenarioPlayerConfiguration(WorldRace.Undead, LordCategory.Mage, new WorldObjectVariant(1), new UnitDefinitionId("G000UU0096")),
+                        new ScenarioPlayerConfiguration(WorldRace.Elf, LordCategory.Guildmaster, new WorldObjectVariant(0), new UnitDefinitionId("G000UU8009"))
                     ],
                     WorldDifficulty.Hard,
                     Leader: null))));

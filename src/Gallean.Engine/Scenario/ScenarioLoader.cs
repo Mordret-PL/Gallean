@@ -64,19 +64,8 @@ public static class ScenarioLoader
         ScenarioId scenarioId,
         IGameDefinitionProvider definitions,
         GlobalVariables globals,
-        ScenarioConfiguration configuration,
-        IRandomProvider random)
+        ScenarioConfiguration configuration)
     {
-        ScenarioLeader? leader = configuration.Leader;
-
-        if (leader is not null && leader.Unit.Name is null)
-        {
-            UnitDefinition definition = definitions.GetUnit(leader.Unit.DefinitionId);
-            string? name = LeaderNameCalculator.TryGetName(definition, definitions, random);
-
-            configuration = configuration with { Leader = leader with { Unit = leader.Unit with { Name = name } } };
-        }
-
         return LoadInternal(
             globalDb,
             scenarioDb,
@@ -167,10 +156,31 @@ public static class ScenarioLoader
         List<ScenarioStackTemplateDefinition> stackTemplates =
             LoadStackTemplates(scenarioDb, scenarioId, playerIds, definitions, globals, locations);
 
-        ScenarioLeader? scenarioLeader = configuration?.Leader;
-        if (scenarioLeader is not null)
+        if (configuration is not null)
         {
-            stacks = ImportLeader(stacks, players, fortifications, scenarioLeader, definitions, globals);
+            if (configuration.Leader is not null)
+            {
+                WorldPlayer owner = FindPlayer(players, configuration.HumanPlayers[0].Race);
+                WorldStack capitalStack = FindCapitalStack(stacks, fortifications, owner.Id);
+
+                stacks = ImportLeader(stacks, capitalStack, configuration.Leader, definitions, globals);
+            }
+
+            foreach (ScenarioPlayerConfiguration player in configuration.HumanPlayers)
+            {
+                if (player.StartingLeaderId is not null)
+                {
+                    WorldPlayer owner = FindPlayer(players, player.Race);
+                    WorldStack capitalStack = FindCapitalStack(stacks, fortifications, owner.Id);
+                    (WorldUnit placeholder, _, _) = capitalStack.GetLeader(definitions);
+                    UnitDefinition definition = definitions.GetUnit(player.StartingLeaderId.Value);
+                    WorldUnit unit = new(placeholder.Id, player.StartingLeaderId.Value, definition.MaxHitpoints, 0, scenarioInfo.SuggestedLevel, [], placeholder.Name, false);
+                    int pendingUpgrades = Math.Min(scenarioInfo.SuggestedLevel, globals.MaxLeaderAbilities) - 1;
+                    ScenarioLeader leader = new(unit, LeaderEquipment.Empty, WorldInventory.Empty, pendingUpgrades, 0);
+
+                    stacks = ImportLeader(stacks, capitalStack, leader, definitions, globals);
+                }
+            }
         }
 
         ScenarioId? nextScenarioId = FindNextScenarioId(campaignDb, scenarioInfo);
@@ -1826,13 +1836,11 @@ public static class ScenarioLoader
 
     private static ImmutableSortedDictionary<WorldStackId, WorldStack> ImportLeader(
         ImmutableSortedDictionary<WorldStackId, WorldStack> stacks,
-        ImmutableSortedDictionary<WorldPlayerId, WorldPlayer> players,
-        ImmutableSortedDictionary<WorldFortificationId, WorldFortification> fortifications,
+        WorldStack stack,
         ScenarioLeader scenarioLeader,
         IGameDefinitionProvider definitions,
         GlobalVariables globals)
     {
-        WorldStack stack = FindImportStack(stacks, players, fortifications);
         (WorldUnit placeholder, _, _) = stack.GetLeader(definitions);
 
         WorldStackBuilder builder = new(definitions);
@@ -1870,28 +1878,33 @@ public static class ScenarioLoader
         return stacks.SetItem(stack.Id, stack);
     }
 
-    private static WorldStack FindImportStack(
-        ImmutableSortedDictionary<WorldStackId, WorldStack> stacks,
-        ImmutableSortedDictionary<WorldPlayerId, WorldPlayer> players,
-        ImmutableSortedDictionary<WorldFortificationId, WorldFortification> fortifications)
+    private static WorldPlayer FindPlayer(ImmutableSortedDictionary<WorldPlayerId, WorldPlayer> players, WorldRace race)
     {
         foreach (WorldPlayer player in players.Values)
         {
-            if (player.IsAi)
+            if (player.Race == race)
             {
-                continue;
+                return player;
             }
+        }
 
-            foreach (WorldFortification fortification in fortifications.Values)
+        throw new InvalidDataException($"Player of race '{race}' was not found.");
+    }
+
+    private static WorldStack FindCapitalStack(
+        ImmutableSortedDictionary<WorldStackId, WorldStack> stacks,
+        ImmutableSortedDictionary<WorldFortificationId, WorldFortification> fortifications,
+        WorldPlayerId playerId)
+    {
+        foreach (WorldFortification fortification in fortifications.Values)
+        {
+            if (fortification is WorldCapital capital && capital.OwnerId == playerId)
             {
-                if (fortification is WorldCapital capital && capital.OwnerId == player.Id)
+                foreach (WorldStack stack in stacks.Values)
                 {
-                    foreach (WorldStack stack in stacks.Values)
+                    if (stack.OwnerId == playerId && stack.Position == capital.Entrance)
                     {
-                        if (stack.OwnerId == player.Id && stack.Position == capital.Entrance)
-                        {
-                            return stack;
-                        }
+                        return stack;
                     }
                 }
             }
