@@ -12,16 +12,12 @@ internal static class UnitStatsCalculator
         GlobalVariables globals)
     {
         UnitDynamicUpgrade upgrade = UnitDynamicUpgradeCalculator.Calculate(definition, level, definitions);
-        UnitAttackStats attackStats = UnitAttackStatsCalculator.CalculateForUnit(definition, definition.Attack, level, modifiers, definitions, globals);
 
         UnitStats stats = new(
             definition.MaxHitpoints + upgrade.MaxHitpoints,
             definition.Armor + upgrade.Armor,
             definition.Regeneration + upgrade.Regeneration,
             definition.Attack.Initiative + upgrade.Initiative,
-            definition.Attack.Damage + upgrade.Damage,
-            attackStats.Heal,
-            definition.Attack.Accuracy + upgrade.Accuracy,
             definition.ExperienceKilled + upgrade.ExperienceKilled,
             definition.ExperienceNextLevel + upgrade.ExperienceNextLevel);
 
@@ -31,9 +27,7 @@ internal static class UnitStatsCalculator
         {
             MaxHitpoints = Math.Min(stats.MaxHitpoints, globals.MaxHitpoints),
             Armor = Math.Min(stats.Armor, globals.MaxArmor),
-            Initiative = Math.Min(stats.Initiative, globals.MaxAttackInitiative),
-            Damage = Math.Min(stats.Damage, globals.MaxAttackDamage),
-            Accuracy = Math.Min(stats.Accuracy, globals.MaxAttackAccuracy)
+            Initiative = Math.Min(stats.Initiative, globals.MaxAttackInitiative)
         };
     }
 
@@ -163,9 +157,7 @@ internal static class UnitStatsCalculator
                 MaxHitpoints = ApplyStat(stats.MaxHitpoints, modifierDefinition.Hitpoints, globals.MinHitpoints, globals.MaxHitpoints),
                 Armor = ApplyStat(stats.Armor, modifierDefinition.Armor, globals.MinArmor, globals.MaxArmor),
                 Regeneration = Math.Max(stats.Regeneration, modifierDefinition.RegenerationPercent),
-                Initiative = ApplyStat(stats.Initiative, modifierDefinition.Initiative, globals.MinAttackInitiative, globals.MaxAttackInitiative),
-                Damage = ApplyStat(stats.Damage, modifierDefinition.Damage, globals.MinAttackDamage, globals.MaxModifiedAttackDamage),
-                Accuracy = ApplyStat(stats.Accuracy, modifierDefinition.Accuracy, globals.MinAttackAccuracy, globals.MaxAttackAccuracy)
+                Initiative = ApplyStat(stats.Initiative, modifierDefinition.Initiative, globals.MinAttackInitiative, globals.MaxAttackInitiative)
             };
         }
 

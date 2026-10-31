@@ -104,11 +104,14 @@ public sealed class WorldEngineBoostPotionTests
             Armor: 0,
             Regeneration: 5,
             Initiative: 40,
-            Damage: 13,
-            Heal: 0,
-            Accuracy: 100,
             ExperienceKilled: 0,
             ExperienceNextLevel: 1000)));
+
+        Assert.That(context.UnitStats.GetWorldAttackStats(boosted, soldierDefinition.Attack), Is.EqualTo(new UnitAttackStats(
+            Accuracy: 100,
+            Damage: 13,
+            Heal: 0,
+            DrainPercent: 0)));
     }
 
     [Test]
@@ -244,11 +247,14 @@ public sealed class WorldEngineBoostPotionTests
             Armor: 0,
             Regeneration: 5,
             Initiative: 40,
-            Damage: 11,
-            Heal: 0,
-            Accuracy: 100,
             ExperienceKilled: 0,
             ExperienceNextLevel: 1000)));
+
+        Assert.That(context.UnitStats.GetWorldAttackStats(soldier, soldierDefinition.Attack), Is.EqualTo(new UnitAttackStats(
+            Accuracy: 100,
+            Damage: 11,
+            Heal: 0,
+            DrainPercent: 0)));
     }
 
     [Test]

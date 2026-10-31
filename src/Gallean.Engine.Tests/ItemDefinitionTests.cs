@@ -30,20 +30,15 @@ public sealed class ItemDefinitionTests
             Armor: 0,
             Regeneration: 5,
             Initiative: 50,
-            Damage: 50,
-            Heal: 0,
-            Accuracy: 80,
             ExperienceKilled: 60,
             ExperienceNextLevel: 150);
 
-        UnitStats expectedEquipped = expectedBare with
-        {
-            Initiative = 62,
-            Damage = 70
-        };
+        UnitStats expectedEquipped = expectedBare with { Initiative = 62 };
 
         Assert.That(statsProvider.GetWorldUnitStats(bareLeader), Is.EqualTo(expectedBare));
         Assert.That(statsProvider.GetWorldUnitStats(equippedLeader), Is.EqualTo(expectedEquipped));
+        Assert.That(statsProvider.GetWorldAttackStats(bareLeader, leaderDefinition.Attack), Is.EqualTo(new UnitAttackStats(Accuracy: 80, Damage: 50, Heal: 0, DrainPercent: 0)));
+        Assert.That(statsProvider.GetWorldAttackStats(equippedLeader, leaderDefinition.Attack), Is.EqualTo(new UnitAttackStats(Accuracy: 80, Damage: 70, Heal: 0, DrainPercent: 0)));
 
         BattleUnit battleLeader = new(
             new BattleUnitId(0),
@@ -63,6 +58,7 @@ public sealed class ItemDefinitionTests
         BattleState battleState = new BattleStateBuilder(definitions).Add(battleLeader).Build(BattleModifiers.None);
 
         Assert.That(statsProvider.GetBattleUnitStats(battleState, battleLeader.Id), Is.EqualTo(expectedEquipped));
+        Assert.That(statsProvider.GetBattleAttackStats(battleState, battleLeader.Id, leaderDefinition.Attack), Is.EqualTo(new UnitAttackStats(Accuracy: 80, Damage: 70, Heal: 0, DrainPercent: 0)));
     }
 
     [Test]
@@ -83,9 +79,6 @@ public sealed class ItemDefinitionTests
             Armor: 0,
             Regeneration: 5,
             Initiative: 50,
-            Damage: 50,
-            Heal: 0,
-            Accuracy: 80,
             ExperienceKilled: 60,
             ExperienceNextLevel: 150);
 

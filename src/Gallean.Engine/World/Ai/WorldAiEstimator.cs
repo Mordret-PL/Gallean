@@ -91,14 +91,20 @@ internal sealed partial class WorldAiEstimator(IEngineContext context)
             {
                 UnitDefinition definition = context.Definitions.GetUnit(unit.DefinitionId);
                 UnitStats stats = context.UnitStats.GetBattleUnitStats(state, unit.Id);
-                power += EstimateUnitPower(unit.Hitpoints, definition, stats, targetCount);
+                UnitAttackStats attackStats = context.UnitStats.GetBattleAttackStats(state, unit.Id, definition.Attack);
+                power += EstimateUnitPower(unit.Hitpoints, definition, stats, attackStats, targetCount);
             }
         }
 
         return power;
     }
 
-    private int EstimateUnitPower(int hitpoints, UnitDefinition definition, UnitStats stats, int targetCount)
+    private int EstimateUnitPower(
+        int hitpoints,
+        UnitDefinition definition,
+        UnitStats stats,
+        UnitAttackStats attackStats,
+        int targetCount)
     {
         if (hitpoints <= 0)
         {
@@ -107,7 +113,7 @@ internal sealed partial class WorldAiEstimator(IEngineContext context)
 
         int armor = Math.Min(stats.Armor, context.Globals.MaxArmor);
         long effectiveHitpoints = (long)hitpoints * 100 / (100 - armor);
-        int impact = EstimateImpact(definition, stats);
+        int impact = EstimateImpact(definition, stats, attackStats);
 
         if (definition.AttacksTwice)
         {
@@ -122,17 +128,17 @@ internal sealed partial class WorldAiEstimator(IEngineContext context)
         return Math.Max(1, (int)Math.Round(Math.Sqrt(effectiveHitpoints * impact)));
     }
 
-    private int EstimateImpact(UnitDefinition definition, UnitStats stats)
+    private int EstimateImpact(UnitDefinition definition, UnitStats stats, UnitAttackStats attackStats)
     {
         int impact = definition.Attack.Type switch
         {
-            UnitAttackType.Damage => stats.Damage * stats.Accuracy / 100,
-            UnitAttackType.DrainLife => stats.Damage * stats.Accuracy / 100,
-            UnitAttackType.Poison => stats.Damage * stats.Accuracy / 100,
-            UnitAttackType.Frostbite => stats.Damage * stats.Accuracy / 100,
-            UnitAttackType.DrainLifeOverflow => stats.Damage * stats.Accuracy / 100,
-            UnitAttackType.Blister => stats.Damage * stats.Accuracy / 100,
-            UnitAttackType.Heal => stats.Heal,
+            UnitAttackType.Damage => attackStats.Damage * attackStats.Accuracy / 100,
+            UnitAttackType.DrainLife => attackStats.Damage * attackStats.Accuracy / 100,
+            UnitAttackType.Poison => attackStats.Damage * attackStats.Accuracy / 100,
+            UnitAttackType.Frostbite => attackStats.Damage * attackStats.Accuracy / 100,
+            UnitAttackType.DrainLifeOverflow => attackStats.Damage * attackStats.Accuracy / 100,
+            UnitAttackType.Blister => attackStats.Damage * attackStats.Accuracy / 100,
+            UnitAttackType.Heal => attackStats.Heal,
             UnitAttackType.Revive => context.Globals.ReviveHitpointsPercent,
             UnitAttackType.Paralyze => EstimateSpecialImpact(stats),
             UnitAttackType.Fear => EstimateSpecialImpact(stats),

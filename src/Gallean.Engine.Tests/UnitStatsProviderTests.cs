@@ -14,7 +14,7 @@ public sealed class UnitStatsProviderTests
 
         UnitStats stats = new UnitStatsProvider(definitions, globals, GameScenarioProvider.Empty.Definition).GetBattleUnitStats(state, unit.Id);
 
-        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 20, Regeneration: 5, Initiative: 50, Damage: 25, Heal: 0, Accuracy: 100, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
+        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 20, Regeneration: 5, Initiative: 50, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
     }
 
     [Test]
@@ -29,7 +29,7 @@ public sealed class UnitStatsProviderTests
 
         UnitStats stats = new UnitStatsProvider(definitions, globals, GameScenarioProvider.Empty.Definition).GetBattleUnitStats(state, unit.Id);
 
-        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 0, Regeneration: 5, Initiative: 50, Damage: 25, Heal: 0, Accuracy: 100, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
+        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 0, Regeneration: 5, Initiative: 50, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
     }
 
     [Test]
@@ -44,7 +44,7 @@ public sealed class UnitStatsProviderTests
 
         UnitStats stats = new UnitStatsProvider(definitions, globals, GameScenarioProvider.Empty.Definition).GetBattleUnitStats(state, unit.Id);
 
-        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 20, Regeneration: 5, Initiative: 50, Damage: 25, Heal: 0, Accuracy: 100, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
+        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 20, Regeneration: 5, Initiative: 50, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
     }
 
     [Test]
@@ -59,7 +59,7 @@ public sealed class UnitStatsProviderTests
 
         UnitStats stats = new UnitStatsProvider(definitions, globals, GameScenarioProvider.Empty.Definition).GetBattleUnitStats(state, unit.Id);
 
-        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 10, Regeneration: 5, Initiative: 50, Damage: 25, Heal: 0, Accuracy: 100, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
+        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 10, Regeneration: 5, Initiative: 50, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
     }
 
     [Test]
@@ -74,7 +74,7 @@ public sealed class UnitStatsProviderTests
 
         UnitStats stats = new UnitStatsProvider(definitions, globals, GameScenarioProvider.Empty.Definition).GetBattleUnitStats(state, unit.Id);
 
-        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 30, Regeneration: 5, Initiative: 50, Damage: 25, Heal: 0, Accuracy: 100, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
+        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 30, Regeneration: 5, Initiative: 50, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
     }
 
     [Test]
@@ -89,7 +89,7 @@ public sealed class UnitStatsProviderTests
 
         UnitStats stats = new UnitStatsProvider(definitions, globals, GameScenarioProvider.Empty.Definition).GetBattleUnitStats(state, unit.Id);
 
-        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 45, Regeneration: 5, Initiative: 50, Damage: 25, Heal: 0, Accuracy: 100, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
+        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 45, Regeneration: 5, Initiative: 50, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
     }
 
     [Test]
@@ -104,7 +104,7 @@ public sealed class UnitStatsProviderTests
 
         UnitStats stats = new UnitStatsProvider(definitions, globals, GameScenarioProvider.Empty.Definition).GetBattleUnitStats(state, unit.Id);
 
-        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 30, Regeneration: 5, Initiative: 50, Damage: 25, Heal: 0, Accuracy: 100, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
+        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 30, Regeneration: 5, Initiative: 50, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
     }
 
     [Test]
@@ -120,7 +120,7 @@ public sealed class UnitStatsProviderTests
 
         UnitStats stats = new UnitStatsProvider(definitions, globals, GameScenarioProvider.Empty.Definition).GetBattleUnitStats(state, unit.Id);
 
-        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 75, Regeneration: 5, Initiative: 50, Damage: 25, Heal: 0, Accuracy: 100, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
+        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 75, Regeneration: 5, Initiative: 50, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
     }
 
     [Test]
@@ -136,7 +136,7 @@ public sealed class UnitStatsProviderTests
 
         UnitStats stats = new UnitStatsProvider(definitions, globals, GameScenarioProvider.Empty.Definition).GetBattleUnitStats(state, unit.Id);
 
-        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 90, Regeneration: 5, Initiative: 50, Damage: 25, Heal: 0, Accuracy: 100, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
+        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 90, Regeneration: 5, Initiative: 50, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
     }
 
     [Test]
@@ -152,7 +152,7 @@ public sealed class UnitStatsProviderTests
 
         UnitStats stats = new UnitStatsProvider(definitions, globals, GameScenarioProvider.Empty.Definition).GetBattleUnitStats(state, unit.Id);
 
-        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 30, Regeneration: 5, Initiative: 50, Damage: 25, Heal: 0, Accuracy: 100, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
+        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 30, Regeneration: 5, Initiative: 50, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
     }
 
     [Test]
@@ -167,7 +167,7 @@ public sealed class UnitStatsProviderTests
 
         UnitStats stats = new UnitStatsProvider(definitions, globals, GameScenarioProvider.Empty.Definition).GetBattleUnitStats(state, unit.Id);
 
-        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 60, Regeneration: 5, Initiative: 50, Damage: 25, Heal: 0, Accuracy: 100, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
+        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 60, Regeneration: 5, Initiative: 50, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
     }
 
     [Test]
@@ -182,7 +182,7 @@ public sealed class UnitStatsProviderTests
 
         UnitStats stats = new UnitStatsProvider(definitions, globals, GameScenarioProvider.Empty.Definition).GetBattleUnitStats(state, unit.Id);
 
-        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 90, Regeneration: 5, Initiative: 50, Damage: 25, Heal: 0, Accuracy: 100, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
+        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 90, Regeneration: 5, Initiative: 50, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
     }
 
     [Test]
@@ -197,7 +197,7 @@ public sealed class UnitStatsProviderTests
 
         UnitStats stats = new UnitStatsProvider(definitions, globals, GameScenarioProvider.Empty.Definition).GetBattleUnitStats(state, unit.Id);
 
-        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 50, Regeneration: 5, Initiative: 50, Damage: 25, Heal: 0, Accuracy: 100, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
+        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 50, Regeneration: 5, Initiative: 50, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
     }
 
     [Test]
@@ -212,7 +212,7 @@ public sealed class UnitStatsProviderTests
 
         UnitStats stats = new UnitStatsProvider(definitions, globals, GameScenarioProvider.Empty.Definition).GetBattleUnitStats(state, unit.Id);
 
-        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 75, Regeneration: 5, Initiative: 50, Damage: 25, Heal: 0, Accuracy: 100, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
+        Assert.That(stats, Is.EqualTo(new UnitStats(MaxHitpoints: 100, Armor: 75, Regeneration: 5, Initiative: 50, ExperienceKilled: 0, ExperienceNextLevel: 1000)));
     }
 
     [Test]
