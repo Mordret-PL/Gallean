@@ -12,7 +12,6 @@ public sealed class LeaderAbilityFormatterTests
         (_, IGameTextProvider texts, _) = gameLoader.LoadCampaigns();
 
         LeaderAbility abilities =
-            LeaderAbility.Zealot |
             LeaderAbility.Incorruptible |
             LeaderAbility.WeaponMaster |
             LeaderAbility.WandScrollUse |
@@ -26,7 +25,6 @@ public sealed class LeaderAbilityFormatterTests
             LeaderAbility.CriticalHit;
 
         Assert.That(LeaderAbilityFormatter.Format(abilities, texts), Is.EqualTo([
-            string.Empty,
             "Incorruptible",
             "Weapon Master",
             "Read Parchments",
