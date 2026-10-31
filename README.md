@@ -61,19 +61,15 @@ Screenshot tests are explicit and need the game assets:
 dotnet test --filter TestCategory=Visual
 ```
 
-On Apple Silicon Macs, install the OpenMP runtime needed by the asset pipeline tests (`brew install libomp`).
-
 ## Publishing
 
-Each client publishes as a trimmed Native AOT build on its own platform, so you need the [Native AOT prerequisites](https://learn.microsoft.com/dotnet/core/deploying/native-aot/#prerequisites) installed:
+Each client publishes as a trimmed Native AOT build on its own platform, so you need the [Native AOT prerequisites](https://learn.microsoft.com/dotnet/core/deploying/native-aot/#prerequisites) installed. On macOS, install Xcode or its Command Line Tools (`xcode-select --install`).
 
 ```bash
 dotnet publish
 ```
 
 The release will be in `dist/` at the root, for example `dist/Gallean-0.8.0-linux-x64.zip`.
-
-On macOS, use the [Microsoft .NET 10 SDK](https://dotnet.microsoft.com/en-us/download/dotnet/10.0) and install Xcode or its Command Line Tools (`xcode-select --install`).
 
 ## Assets
 
