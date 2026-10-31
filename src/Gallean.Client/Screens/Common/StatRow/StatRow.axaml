@@ -16,6 +16,9 @@
           <StackPanel Grid.Column="2" Classes="stat-value">
             <TextBlock Classes="body" local:TextRuns.Spans="{Binding Value.Text}" />
             <TextBlock Classes="body change" Classes.decrease="{Binding Value.Change, Converter={x:Static local:LessThanConverter.Instance}, ConverterParameter=0}" Text="{Binding Value.ChangeText}" />
+            <TextBlock Classes="body separator" Text="/" IsVisible="{Binding SecondaryValue, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            <TextBlock Classes="body" local:TextRuns.Spans="{Binding SecondaryValue.Text}" IsVisible="{Binding SecondaryValue, Converter={x:Static ObjectConverters.IsNotNull}}" />
+            <TextBlock Classes="body change" Classes.decrease="{Binding SecondaryValue.Change, Converter={x:Static local:LessThanConverter.Instance}, ConverterParameter=0}" Text="{Binding SecondaryValue.ChangeText}" IsVisible="{Binding SecondaryValue, Converter={x:Static ObjectConverters.IsNotNull}}" />
           </StackPanel>
         </Grid>
       </Border>
@@ -53,6 +56,10 @@
   <Style Selector="Border.stat-row StackPanel.stat-value > TextBlock">
     <Setter Property="Foreground" Value="{StaticResource PrimaryTextBrush}" />
     <Setter Property="TextWrapping" Value="Wrap" />
+  </Style>
+  <Style Selector="Border.stat-row StackPanel.stat-value > TextBlock.separator">
+    <Setter Property="Margin" Value="4,0" />
+    <Setter Property="Foreground" Value="{StaticResource SecondaryTextBrush}" />
   </Style>
   <Style Selector="Border.stat-row StackPanel.stat-value > TextBlock.change">
     <Setter Property="Foreground" Value="{StaticResource StatRowIncreaseBrush}" />

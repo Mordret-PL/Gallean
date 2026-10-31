@@ -28,6 +28,8 @@ internal sealed record UnitDetailsViewModel(
     IReadOnlyList<UnitStatusViewModel> Statuses,
     IReadOnlyList<UnitPermanentModifierViewModel> PermanentModifiers)
 {
+    private sealed record AttackDetails(UnitAttackDefinition Attack, UnitAttackStats BaseStats, UnitAttackStats Stats);
+
     private static readonly ImmutableArray<Func<UnitWardCategory, UnitWard>> WardTypes =
     [
         category => new UnitAttackSourceWard(UnitAttackSource.Weapon, category),
@@ -94,7 +96,6 @@ internal sealed record UnitDetailsViewModel(
         UnitDefinition definition = definitions.GetUnit(unit.DefinitionId);
         string name = UnitNameResolver.Resolve(unit, definitions, texts);
         UnitStats unitStats = stats.GetBattleUnitStats(state, unitId);
-        UnitAttackStats attackStats = stats.GetBattleAttackStats(state, unitId, definition.Attack);
         WorldUnit baseUnit = new(
             PreviewUnitId,
             unit.DefinitionId,
@@ -106,6 +107,10 @@ internal sealed record UnitDetailsViewModel(
             unit.IsTypeLocked);
 
         UnitStats baseStats = stats.GetWorldUnitStats(baseUnit);
+        AttackDetails attackDetails = new(
+            definition.Attack,
+            stats.GetWorldAttackStats(baseUnit, definition.Attack),
+            stats.GetBattleAttackStats(state, unitId, definition.Attack));
         UnitExperience experience = stats.GetBattleUnitExperience(state, unitId);
 
         if (state.Outcome is not null)
@@ -125,15 +130,17 @@ internal sealed record UnitDetailsViewModel(
             texts);
         bool isUpgradeBlocked = CheckUpgradeBlocked(unit.DefinitionId, unit.IsTypeLocked, experience, owner, stats);
 
-        UnitDamageOverTimeViewModel? damageOverTime;
+        AttackDetails? secondaryAttackDetails;
         if (definition.SecondaryAttack is not null)
         {
-            UnitAttackStats secondaryAttackStats = stats.GetBattleAttackStats(state, unitId, definition.SecondaryAttack);
-            damageOverTime = UnitDamageOverTimeViewModel.Create(definition.SecondaryAttack, secondaryAttackStats.Damage);
+            secondaryAttackDetails = new AttackDetails(
+                definition.SecondaryAttack,
+                stats.GetWorldAttackStats(baseUnit, definition.SecondaryAttack),
+                stats.GetBattleAttackStats(state, unitId, definition.SecondaryAttack));
         }
         else
         {
-            damageOverTime = null;
+            secondaryAttackDetails = null;
         }
 
         return Build(
@@ -142,8 +149,8 @@ internal sealed record UnitDetailsViewModel(
             name,
             unitStats,
             baseStats,
-            attackStats.Damage,
-            damageOverTime,
+            attackDetails,
+            secondaryAttackDetails,
             unit.Hitpoints,
             unit.Level,
             experience,
@@ -168,6 +175,10 @@ internal sealed record UnitDetailsViewModel(
         UnitStats unitStats = stats.GetWorldUnitStats(unit);
         WorldUnit baseUnit = unit with { Modifiers = GetScenarioModifiers(unit.Modifiers) };
         UnitStats baseStats = stats.GetWorldUnitStats(baseUnit);
+        AttackDetails attackDetails = new(
+            definition.Attack,
+            stats.GetWorldAttackStats(baseUnit, definition.Attack),
+            stats.GetWorldAttackStats(unit, definition.Attack));
         IReadOnlyList<UnitModifierViewModel> modifiers = UnitModifierViewModel.CreateAll(unit, definitions, texts);
         UnitExperience experience = stats.GetWorldUnitExperience(unit);
         bool isUpgradeBlocked = CheckUpgradeBlocked(unit.DefinitionId, unit.IsTypeLocked, experience, owner, stats);
@@ -179,15 +190,17 @@ internal sealed record UnitDetailsViewModel(
             definitions,
             texts);
 
-        UnitDamageOverTimeViewModel? damageOverTime;
+        AttackDetails? secondaryAttackDetails;
         if (definition.SecondaryAttack is not null)
         {
-            UnitAttackStats secondaryAttackStats = stats.GetWorldAttackStats(unit, definition.SecondaryAttack);
-            damageOverTime = UnitDamageOverTimeViewModel.Create(definition.SecondaryAttack, secondaryAttackStats.Damage);
+            secondaryAttackDetails = new AttackDetails(
+                definition.SecondaryAttack,
+                stats.GetWorldAttackStats(baseUnit, definition.SecondaryAttack),
+                stats.GetWorldAttackStats(unit, definition.SecondaryAttack));
         }
         else
         {
-            damageOverTime = null;
+            secondaryAttackDetails = null;
         }
 
         return Build(
@@ -196,8 +209,8 @@ internal sealed record UnitDetailsViewModel(
             name,
             unitStats,
             baseStats,
-            unitStats.Damage,
-            damageOverTime,
+            attackDetails,
+            secondaryAttackDetails,
             unit.Hitpoints,
             unit.Level,
             experience,
@@ -233,8 +246,8 @@ internal sealed record UnitDetailsViewModel(
         string name,
         UnitStats unitStats,
         UnitStats baseStats,
-        int attackDamage,
-        UnitDamageOverTimeViewModel? damageOverTime,
+        AttackDetails attackDetails,
+        AttackDetails? secondaryAttackDetails,
         int hitpoints,
         int level,
         UnitExperience experience,
@@ -247,13 +260,13 @@ internal sealed record UnitDetailsViewModel(
         IReadOnlyList<UnitPermanentModifierViewModel> permanentModifiers)
     {
         StatValueViewModel damage;
-        if (baseStats.Heal > 0)
+        if (attackDetails.BaseStats.Heal > 0)
         {
-            damage = new StatValueViewModel(TextSpans.FromText(baseStats.Heal.ToString()), unitStats.Heal - baseStats.Heal);
+            damage = new StatValueViewModel(TextSpans.FromText(attackDetails.BaseStats.Heal.ToString()), attackDetails.Stats.Heal - attackDetails.BaseStats.Heal);
         }
-        else if (baseStats.Damage > 0 && attackDamage > 0)
+        else if (attackDetails.BaseStats.Damage > 0 && attackDetails.Stats.Damage > 0)
         {
-            damage = new StatValueViewModel(TextSpans.FromText(baseStats.Damage.ToString()), attackDamage - baseStats.Damage);
+            damage = new StatValueViewModel(TextSpans.FromText(attackDetails.BaseStats.Damage.ToString()), attackDetails.Stats.Damage - attackDetails.BaseStats.Damage);
         }
         else
         {
@@ -261,13 +274,19 @@ internal sealed record UnitDetailsViewModel(
         }
 
         UnitAttackViewModel? secondaryAttack;
-        if (definition.SecondaryAttack is not null)
+        StatValueViewModel? secondaryAccuracy;
+        UnitDamageOverTimeViewModel? damageOverTime;
+        if (secondaryAttackDetails is not null)
         {
-            secondaryAttack = UnitAttackViewModel.Create(definition.SecondaryAttack, attacksTwice: false);
+            secondaryAttack = UnitAttackViewModel.Create(secondaryAttackDetails.Attack, attacksTwice: false);
+            secondaryAccuracy = CreateAccuracy(secondaryAttackDetails);
+            damageOverTime = UnitDamageOverTimeViewModel.Create(secondaryAttackDetails.Attack, secondaryAttackDetails.Stats.Damage);
         }
         else
         {
             secondaryAttack = null;
+            secondaryAccuracy = null;
+            damageOverTime = null;
         }
 
         int currentExperience;
@@ -282,16 +301,16 @@ internal sealed record UnitDetailsViewModel(
 
         List<StatRowViewModel> rows =
         [
-            new(IconMoniker.Target, Tr("Targets"), CreateTargets(definition.Attack.Reach)),
-            new(IconMoniker.Armor, Tr("Armor"), new StatValueViewModel(TextSpans.FromText(baseStats.Armor.ToString()), unitStats.Armor - baseStats.Armor)),
-            new(IconMoniker.Accuracy, Tr("Accuracy"), new StatValueViewModel(TextSpans.FromText($"{baseStats.Accuracy}%"), unitStats.Accuracy - baseStats.Accuracy)),
-            new(IconMoniker.Initiative, Tr("Initiative"), new StatValueViewModel(TextSpans.FromText(baseStats.Initiative.ToString()), unitStats.Initiative - baseStats.Initiative))
+            new(IconMoniker.Target, Tr("Targets"), CreateTargets(attackDetails.Attack.Reach), null),
+            new(IconMoniker.Armor, Tr("Armor"), new StatValueViewModel(TextSpans.FromText(baseStats.Armor.ToString()), unitStats.Armor - baseStats.Armor), null),
+            new(IconMoniker.Accuracy, Tr("Accuracy"), CreateAccuracy(attackDetails), secondaryAccuracy),
+            new(IconMoniker.Initiative, Tr("Initiative"), new StatValueViewModel(TextSpans.FromText(baseStats.Initiative.ToString()), unitStats.Initiative - baseStats.Initiative), null)
         ];
 
         StatRowViewModel? leadershipRow;
         if (definition.LeaderCategory is not null)
         {
-            leadershipRow = new StatRowViewModel(IconMoniker.Leadership, Tr("Leadership"), new StatValueViewModel(TextSpans.FromText(leadership.ToString()), 0));
+            leadershipRow = new StatRowViewModel(IconMoniker.Leadership, Tr("Leadership"), new StatValueViewModel(TextSpans.FromText(leadership.ToString()), 0), null);
         }
         else
         {
@@ -313,7 +332,7 @@ internal sealed record UnitDetailsViewModel(
             experience.IsPendingUpgrade && !isUpgradeBlocked,
             isUpgradeBlocked,
             isTypeLocked,
-            UnitAttackViewModel.Create(definition.Attack, definition.AttacksTwice),
+            UnitAttackViewModel.Create(attackDetails.Attack, definition.AttacksTwice),
             damage,
             damageOverTime,
             secondaryAttack,
@@ -377,6 +396,11 @@ internal sealed record UnitDetailsViewModel(
         {
             return false;
         }
+    }
+
+    private static StatValueViewModel CreateAccuracy(AttackDetails attackDetails)
+    {
+        return new StatValueViewModel(TextSpans.FromText($"{attackDetails.BaseStats.Accuracy}%"), attackDetails.Stats.Accuracy - attackDetails.BaseStats.Accuracy);
     }
 
     private static StatValueViewModel CreateTargets(UnitAttackReach reach)
