@@ -18,11 +18,11 @@ internal static class LeaderUpgradeCalculator
         }
 
         int limit = globals.MaxLeaderAbilities;
-        int rewardedLevels = Math.Min(survivingLeader.Level, limit) - leader.Level;
-        int remainingUpgrades = limit - stack.PendingLeaderUpgrades;
-        int grantedUpgrades = Math.Min(rewardedLevels, remainingUpgrades);
+        int upgradeCount = Math.Min(survivingLeader.Level, limit) - leader.Level;
+        int remainingCount = limit - stack.PendingLeaderUpgrades;
+        int grantedCount = Math.Min(upgradeCount, remainingCount);
 
-        for (int i = 0; i < grantedUpgrades; i++)
+        for (int i = 0; i < grantedCount; i++)
         {
             yield return new WorldLeaderUpgradeGrantedEvent(stack.Id);
         }
