@@ -259,8 +259,12 @@ internal static class BattleAttackCalculator
         UnitAttackDefinition attack = context.Definitions.GetAttack(attackId);
         IBattleAttackResolver resolver = BattleAttackResolverFactory.Create(attack.Type);
 
+        BattleUnit attacker = state.GetUnit(attackerId);
+        BattleSideModifiers sideModifiers = state.Modifiers.GetModifiers(attacker.Side);
+
         UnitAttackStats attackStats = context.UnitStats.GetBattleAttackStats(state, attackerId, attack);
-        attackStats = attackStats with { Accuracy = Math.Max(0, attackStats.Accuracy - accuracyReduction) };
+        int accuracy = Math.Clamp(attackStats.Accuracy + sideModifiers.AccuracyBonus, 0, context.Globals.MaxAttackAccuracy);
+        attackStats = attackStats with { Accuracy = Math.Max(0, accuracy - accuracyReduction) };
 
         return resolver.Resolve(state, context, attackerId, new BattleAttackUnitTarget(targetId), attack, attackStats);
     }

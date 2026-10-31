@@ -164,13 +164,7 @@ public sealed class UnitStatsProvider(
             }
         }
 
-        BattleSideModifiers sideModifiers = state.Modifiers.GetModifiers(unit.Side);
-
-        return stats with
-        {
-            Damage = Math.Min(stats.Damage + damageChange, globals.MaxAttackDamage),
-            Accuracy = Math.Clamp(stats.Accuracy + sideModifiers.AccuracyBonus, 0, globals.MaxAttackAccuracy)
-        };
+        return stats with { Damage = Math.Min(stats.Damage + damageChange, globals.MaxAttackDamage) };
     }
 
     private UnitAttackStats GetAttackStats(UnitDefinition definition, int level, ImmutableArray<UnitModifier> modifiers, UnitAttackDefinition attack)

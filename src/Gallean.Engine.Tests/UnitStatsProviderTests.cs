@@ -278,25 +278,6 @@ public sealed class UnitStatsProviderTests
     }
 
     [Test]
-    public void ItemAttackSideAccuracyTest()
-    {
-        UnitDefinition definition = TestHelpers.SimpleUnitDefinition("unit", maxHitpoints: 100, initiative: 50, damage: 10);
-        UnitAttackDefinition orb = TestHelpers.SimpleAttack(new UnitAttackDefinitionId("orb"), initiative: 50, damage: 40, accuracy: 80, reach: UnitAttackReach.Any);
-        IGameDefinitionProvider definitions = new TestGameDefinitionProviderBuilder().AddUnit(definition).Build();
-        GlobalVariables globals = new();
-        BattleModifiers modifiers = new(
-            Attacker: new BattleSideModifiers(ExperiencePercent: 0, AccuracyBonus: -15, RandomDamageBonus: 0, CanRetreat: true),
-            Defender: BattleSideModifiers.None);
-
-        BattleUnit unit = new(new BattleUnitId(0), null, definition.Id, BattleSide.Attacker, 100, 0, 0, 1, [], [], null, [], null, false);
-        BattleState state = new BattleStateBuilder(definitions).Add(unit, GridPosition.FrontBottom).Build(modifiers);
-
-        UnitAttackStats stats = new UnitStatsProvider(definitions, globals, GameScenarioProvider.Empty.Definition).GetBattleAttackStats(state, unit.Id, orb);
-
-        Assert.That(stats, Is.EqualTo(new UnitAttackStats(Accuracy: 65, Damage: 40, Heal: 0, DrainPercent: 0)));
-    }
-
-    [Test]
     public void TransformedExperienceTest()
     {
         UnitDefinition originalDefinition = TestHelpers.SimpleUnitDefinition("original", maxHitpoints: 100, initiative: 50, damage: 25);
