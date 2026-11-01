@@ -813,12 +813,15 @@ public static class ScenarioLoader
         ScenarioEventMoveStackEffect? MapMoveStack()
         {
             Db.Id? stackId = effect.IdStack ?? effect.IdStackTemplate;
+            ScenarioLocationId locationId = new(RequireId(effect.IdLocation, effect));
 
-            if (stackId is not null && stackReferences.TryGetValue(stackId.Value, out ScenarioStackReference? stack))
+            if (effect.BoolValue is true)
             {
-                return new ScenarioEventMoveStackEffect(
-                    stack,
-                    new ScenarioLocationId(RequireId(effect.IdLocation, effect)));
+                return new ScenarioEventMoveStackEffect(null, locationId);
+            }
+            else if (stackId is not null && stackReferences.TryGetValue(stackId.Value, out ScenarioStackReference? stack))
+            {
+                return new ScenarioEventMoveStackEffect(stack, locationId);
             }
             else
             {

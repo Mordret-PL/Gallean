@@ -1149,6 +1149,34 @@ public sealed class ScenarioLoaderTests
     }
 
     [Test]
+    public void Load_S139SC0000_ScenarioEvent_S139EV0035_Test()
+    {
+        ScenarioId scenarioId = new("S139SC0000");
+        Scenario scenario = ScenarioLoader.Load(globalDb, scenarioDb, campaignDb, scenarioId, definitions, globals);
+
+        ScenarioEventDefinition scenarioEvent = scenario.Provider.GetEvent(new ScenarioEventId("S139EV0035"));
+
+        Assert.That(scenarioEvent, Is.EqualTo(new ScenarioEventDefinition(
+            new ScenarioEventId("S139EV0035"),
+            [WorldRace.Elf],
+            [WorldRace.Elf],
+            [new ScenarioEventEnteringZoneCondition(new ScenarioLocationId("S139LO0036"))],
+            [
+                new ScenarioEventPopupEffect(
+                    new ScenarioTextId("S139EV0035:POPUP_TXT:0"),
+                    ScenarioEventPopupAudience.AllPlayers,
+                    null,
+                    IsPortraitLeft: true,
+                    IsPortraitTriggerer: true),
+                new ScenarioEventMoveStackEffect(null, new ScenarioLocationId("S139LO0048"))
+            ],
+            Enabled: true,
+            OccurOnce: false,
+            Chance: 100,
+            Order: 50)));
+    }
+
+    [Test]
     public void Load_S139SC0000_ScenarioEvent_S139EV000f_Test()
     {
         ScenarioId scenarioId = new("S139SC0000");

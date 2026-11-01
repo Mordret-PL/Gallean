@@ -84,13 +84,28 @@ internal partial class WorldEngine
 
         public ScenarioEventEffectResult Visit(ScenarioEventMoveStackEffect effect, ScenarioEventEffectContext context)
         {
-            ImmutableArray<WorldStackId> instances = ScenarioStackReferenceCalculator.GetLiveInstances(effect.Stack, context.State);
-            if (instances.IsEmpty)
+            WorldStack? stack;
+
+            if (effect.Stack is null)
+            {
+                stack = ScenarioEventTriggererCalculator.FindStack(context.TriggeredEvent.Trigger, context.State);
+            }
+            else
+            {
+                ImmutableArray<WorldStackId> instances = ScenarioStackReferenceCalculator.GetLiveInstances(effect.Stack, context.State);
+                if (instances.IsEmpty)
+                {
+                    return Empty(context.State);
+                }
+
+                stack = context.State.Stacks[instances[0]];
+            }
+
+            if (stack is null)
             {
                 return Empty(context.State);
             }
 
-            WorldStack stack = context.State.Stacks[instances[0]];
             ScenarioLocationDefinition location = Context.Scenario.GetLocation(effect.Location);
 
             if (ScenarioLocationCalculator.Contains(location, stack.Position))
