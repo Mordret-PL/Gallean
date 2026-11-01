@@ -17,7 +17,7 @@ public sealed class WorldEngineGameEndedTests
 
         WorldPlayer attacker = TestHelpers.SimplePlayer(new WorldPlayerId(1), WorldRace.Undead, map);
         WorldPlayer defender = TestHelpers.SimplePlayer(new WorldPlayerId(2), WorldRace.Heretic, map);
-        WorldPlayer bystander = TestHelpers.SimplePlayer(new WorldPlayerId(3), WorldRace.Human, map);
+        WorldPlayer otherPlayer = TestHelpers.SimplePlayer(new WorldPlayerId(3), WorldRace.Human, map);
         UnitDefinition leader = TestHelpers.SimpleLeaderDefinition(
             TestHelpers.SimpleUnitDefinition("leader", maxHitpoints: 100, initiative: 50, damage: 10),
             movementPoints: 2, leadership: 6);
@@ -40,8 +40,8 @@ public sealed class WorldEngineGameEndedTests
             .WithPlayer(attacker)
             .WithDefinition(TestHelpers.SimpleLord(defender.LordId, defender.Race, LordCategory.Warrior))
             .WithPlayer(defender)
-            .WithDefinition(TestHelpers.SimpleLord(bystander.LordId, bystander.Race, LordCategory.Warrior))
-            .WithPlayer(bystander)
+            .WithDefinition(TestHelpers.SimpleLord(otherPlayer.LordId, otherPlayer.Race, LordCategory.Warrior))
+            .WithPlayer(otherPlayer)
             .WithStack(stack)
             .WithCapital(capital)
             .Build();
@@ -60,9 +60,9 @@ public sealed class WorldEngineGameEndedTests
         engine.CheckCommand(new WorldEndTurnCommand(), [
             new WorldTurnEndedEvent(attacker.Id),
             new WorldTurnEndedEvent(defender.Id),
-            new WorldTurnStartingEvent(bystander.Id),
-            new WorldTurnStartedEvent(bystander.Id),
-            new WorldTurnResourcesGeneratedEvent(bystander.Id, new WorldResourceSet(100, 0, 0, 25, 0, 0))
+            new WorldTurnStartingEvent(otherPlayer.Id),
+            new WorldTurnStartedEvent(otherPlayer.Id),
+            new WorldTurnResourcesGeneratedEvent(otherPlayer.Id, new WorldResourceSet(100, 0, 0, 25, 0, 0))
         ]);
 
         Assert.That(engine.State, Is.EqualTo(engine.State with
@@ -77,7 +77,7 @@ public sealed class WorldEngineGameEndedTests
             {
                 CapturedById = attacker.Id
             }),
-            TurnInfo = new WorldTurnInfo(1, bystander.Id),
+            TurnInfo = new WorldTurnInfo(1, otherPlayer.Id),
             ScenarioState = WorldScenarioState.Empty
         }));
     }
@@ -95,7 +95,7 @@ public sealed class WorldEngineGameEndedTests
 
         WorldPlayer attacker = TestHelpers.SimplePlayer(new WorldPlayerId(1), WorldRace.Undead, map) with { IsAi = true };
         WorldPlayer defender = TestHelpers.SimplePlayer(new WorldPlayerId(2), WorldRace.Heretic, map);
-        WorldPlayer bystander = TestHelpers.SimplePlayer(new WorldPlayerId(3), WorldRace.Human, map) with { IsAi = true };
+        WorldPlayer otherPlayer = TestHelpers.SimplePlayer(new WorldPlayerId(3), WorldRace.Human, map) with { IsAi = true };
         UnitDefinition leader = TestHelpers.SimpleLeaderDefinition(
             TestHelpers.SimpleUnitDefinition("leader", maxHitpoints: 100, initiative: 50, damage: 10),
             movementPoints: 2, leadership: 6);
@@ -118,8 +118,8 @@ public sealed class WorldEngineGameEndedTests
             .WithPlayer(attacker)
             .WithDefinition(TestHelpers.SimpleLord(defender.LordId, defender.Race, LordCategory.Warrior))
             .WithPlayer(defender)
-            .WithDefinition(TestHelpers.SimpleLord(bystander.LordId, bystander.Race, LordCategory.Warrior))
-            .WithPlayer(bystander)
+            .WithDefinition(TestHelpers.SimpleLord(otherPlayer.LordId, otherPlayer.Race, LordCategory.Warrior))
+            .WithPlayer(otherPlayer)
             .WithStack(stack)
             .WithCapital(capital)
             .Build();
@@ -174,7 +174,7 @@ public sealed class WorldEngineGameEndedTests
 
         WorldPlayer attacker = TestHelpers.SimplePlayer(new WorldPlayerId(1), WorldRace.Undead, map) with { IsAi = true };
         WorldPlayer defender = TestHelpers.SimplePlayer(new WorldPlayerId(2), WorldRace.Heretic, map) with { IsAi = true };
-        WorldPlayer bystander = TestHelpers.SimplePlayer(new WorldPlayerId(3), WorldRace.Human, map) with { IsAi = true };
+        WorldPlayer otherPlayer = TestHelpers.SimplePlayer(new WorldPlayerId(3), WorldRace.Human, map) with { IsAi = true };
         UnitDefinition leader = TestHelpers.SimpleLeaderDefinition(
             TestHelpers.SimpleUnitDefinition("leader", maxHitpoints: 100, initiative: 50, damage: 10),
             movementPoints: 2, leadership: 6);
@@ -197,8 +197,8 @@ public sealed class WorldEngineGameEndedTests
             .WithPlayer(attacker)
             .WithDefinition(TestHelpers.SimpleLord(defender.LordId, defender.Race, LordCategory.Warrior))
             .WithPlayer(defender)
-            .WithDefinition(TestHelpers.SimpleLord(bystander.LordId, bystander.Race, LordCategory.Warrior))
-            .WithPlayer(bystander)
+            .WithDefinition(TestHelpers.SimpleLord(otherPlayer.LordId, otherPlayer.Race, LordCategory.Warrior))
+            .WithPlayer(otherPlayer)
             .WithStack(stack)
             .WithCapital(capital)
             .Build();

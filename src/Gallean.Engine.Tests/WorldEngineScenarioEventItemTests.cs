@@ -1811,7 +1811,7 @@ public sealed class WorldEngineScenarioEventItemTests
 
         WorldPlayer attacker = TestHelpers.SimplePlayer(new WorldPlayerId(1), WorldRace.Human, map);
         WorldPlayer defender = TestHelpers.SimplePlayer(new WorldPlayerId(2), WorldRace.Heretic, map);
-        WorldPlayer bystander = TestHelpers.SimplePlayer(new WorldPlayerId(3), WorldRace.Dwarf, map);
+        WorldPlayer otherPlayer = TestHelpers.SimplePlayer(new WorldPlayerId(3), WorldRace.Dwarf, map);
         UnitDefinition leader = TestHelpers.SimpleLeaderDefinition(
             TestHelpers.SimpleUnitDefinition("leader", maxHitpoints: 100, initiative: 50, damage: 10),
             movementPoints: 2, leadership: 6);
@@ -1832,9 +1832,9 @@ public sealed class WorldEngineScenarioEventItemTests
             {
                 Inventory = new WorldInventory([new WorldItem(new WorldItemId("Relic"), item, Charges: null)])
             };
-        WorldCapital bystanderCapital = TestHelpers.SimpleCapital(
+        WorldCapital otherCapital = TestHelpers.SimpleCapital(
             new WorldFortificationId("Capital2"),
-            bystander.Id,
+            otherPlayer.Id,
             new WorldPosition(10, 4),
             UnitGrid<WorldUnit>.Empty);
 
@@ -1856,11 +1856,11 @@ public sealed class WorldEngineScenarioEventItemTests
             .WithPlayer(attacker)
             .WithDefinition(TestHelpers.SimpleLord(defender.LordId, defender.Race, LordCategory.Warrior))
             .WithPlayer(defender)
-            .WithDefinition(TestHelpers.SimpleLord(bystander.LordId, bystander.Race, LordCategory.Warrior))
-            .WithPlayer(bystander)
+            .WithDefinition(TestHelpers.SimpleLord(otherPlayer.LordId, otherPlayer.Race, LordCategory.Warrior))
+            .WithPlayer(otherPlayer)
             .WithStack(stack)
             .WithCapital(capital)
-            .WithCapital(bystanderCapital)
+            .WithCapital(otherCapital)
             .WithScenarioEvent(scenarioEvent)
             .Build();
 

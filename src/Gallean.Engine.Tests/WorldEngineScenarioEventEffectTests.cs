@@ -733,11 +733,11 @@ public sealed class WorldEngineScenarioEventEffectTests
             TestHelpers.SingleUnitGrid(new WorldUnitId("leader"), leader),
             movementPoints: 10);
 
-        WorldStack bystander = TestHelpers.SimpleStack(
+        WorldStack otherStack = TestHelpers.SimpleStack(
             new WorldStackId("Stack2"),
             player.Id,
             new WorldPosition(0, 2),
-            TestHelpers.SingleUnitGrid(new WorldUnitId("bystander"), leader),
+            TestHelpers.SingleUnitGrid(new WorldUnitId("other"), leader),
             movementPoints: 10);
 
         ScenarioLocationDefinition gate = new(new ScenarioLocationId("Gate"), new ScenarioTextId("Gate"), new WorldPosition(1, 0), 0);
@@ -763,7 +763,7 @@ public sealed class WorldEngineScenarioEventEffectTests
             .WithDefinition(TestHelpers.SimpleLord(player.LordId, player.Race, LordCategory.Warrior))
             .WithPlayer(player)
             .WithStack(stack)
-            .WithStack(bystander)
+            .WithStack(otherStack)
             .WithScenarioLocation(gate)
             .WithScenarioLocation(destination)
             .WithScenarioEvent(scenarioEvent)
@@ -794,7 +794,7 @@ public sealed class WorldEngineScenarioEventEffectTests
                         Direction = WorldStackDirection.SouthEast,
                         MovementPoints = 8
                     })
-                    .SetItem(bystander.Id, bystander),
+                    .SetItem(otherStack.Id, otherStack),
                 ScenarioState = WorldScenarioState.Empty with
                 {
                     Messages =

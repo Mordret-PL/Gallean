@@ -657,19 +657,19 @@ public sealed class BattleEngineSecondaryAttackTests
             }
         };
         UnitDefinition targetDefinition = TestHelpers.SimpleUnitDefinition("target", maxHitpoints: 20, initiative: 10, damage: 5);
-        UnitDefinition bystanderDefinition = TestHelpers.SimpleUnitDefinition("bystander", maxHitpoints: 20, initiative: 40, damage: 5);
+        UnitDefinition otherDefenderDefinition = TestHelpers.SimpleUnitDefinition("other-defender", maxHitpoints: 20, initiative: 40, damage: 5);
 
         BattleUnit attacker = TestHelpers.SimpleBattleUnit(new BattleUnitId(0), null, attackerDefinition.Id, BattleSide.Attacker, hitpoints: 50);
         BattleUnit target = TestHelpers.SimpleBattleUnit(new BattleUnitId(1), null, targetDefinition.Id, BattleSide.Defender, hitpoints: 20);
-        BattleUnit bystander = TestHelpers.SimpleBattleUnit(new BattleUnitId(2), null, bystanderDefinition.Id, BattleSide.Defender, hitpoints: 20);
+        BattleUnit otherDefender = TestHelpers.SimpleBattleUnit(new BattleUnitId(2), null, otherDefenderDefinition.Id, BattleSide.Defender, hitpoints: 20);
 
         BattleEngine engine = new TestBattleEngineBuilder()
             .WithDefinition(attackerDefinition)
             .WithDefinition(targetDefinition)
-            .WithDefinition(bystanderDefinition)
+            .WithDefinition(otherDefenderDefinition)
             .WithAttacker(attacker, GridPosition.FrontBottom)
             .WithDefender(target, GridPosition.FrontBottom)
-            .WithDefender(bystander, GridPosition.BackBottom)
+            .WithDefender(otherDefender, GridPosition.BackBottom)
             .WithRandom(new TestSequenceRandomProvider(1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1))
             .Build();
 
@@ -682,7 +682,7 @@ public sealed class BattleEngineSecondaryAttackTests
             new BattleUnitEffectAppliedEvent(attacker.Id, target.Id, new BattleBlisterStatusEffect(1, 3)),
             new BattleUnitTurnEndingEvent(attacker.Id),
             new BattleUnitTurnEndedEvent(attacker.Id),
-            new BattleUnitTurnStartedEvent(new BattleUnitTurn(bystander.Id, BattleUnitTurnType.Normal))
+            new BattleUnitTurnStartedEvent(new BattleUnitTurn(otherDefender.Id, BattleUnitTurnType.Normal))
         ]);
 
         Assert.That(engine.State, Is.EqualTo(
@@ -693,9 +693,9 @@ public sealed class BattleEngineSecondaryAttackTests
                     .Build(),
                 DefenderGrid = new UnitGrid<BattleUnit>.Builder()
                     .Place(target with { Hitpoints = 15, StatusEffects = [new BattleBlisterStatusEffect(1, 3)] }, GridPosition.FrontBottom, false)
-                    .Place(bystander, GridPosition.BackBottom, false)
+                    .Place(otherDefender, GridPosition.BackBottom, false)
                     .Build(),
-                CurrentUnitTurn = new BattleUnitTurn(bystander.Id, BattleUnitTurnType.Normal),
+                CurrentUnitTurn = new BattleUnitTurn(otherDefender.Id, BattleUnitTurnType.Normal),
                 CurrentRound = BattleRound.Normal(1)
             }));
     }
