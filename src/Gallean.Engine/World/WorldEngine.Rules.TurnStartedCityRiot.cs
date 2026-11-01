@@ -2,9 +2,9 @@ namespace Gallean.Engine;
 
 internal partial class WorldEngine
 {
-    private sealed class TurnStartingCityRiotRule(IEngineContext context) : WorldEventRule(context)
+    private sealed class TurnStartedCityRiotRule(IEngineContext context) : WorldEventRule(context)
     {
-        public override EventRuleResult<WorldEvent> Visit(WorldTurnStartingEvent ev, WorldState state)
+        public override EventRuleResult<WorldEvent> Visit(WorldTurnStartedEvent ev, WorldState state)
         {
             WorldPlan plan = WorldPlan.For(state);
 

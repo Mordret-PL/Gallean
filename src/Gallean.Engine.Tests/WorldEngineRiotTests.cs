@@ -41,9 +41,9 @@ public sealed class WorldEngineRiotTests
         engine.CheckCommand(new WorldStartGameCommand(),
         [
             new WorldTurnStartingEvent(player1.Id),
+            new WorldTurnStartedEvent(player1.Id),
             new WorldCityRiotEndedEvent(city.Id),
             new WorldUnitDamagedEvent(new WorldUnitGroup.Fortification(city.Id), new WorldUnitId("soldier"), 80, SourcePlayerId: null),
-            new WorldTurnStartedEvent(player1.Id),
             new WorldTurnResourcesGeneratedEvent(player1.Id, new WorldResourceSet(100, 0, 0, 25, 0, 0))
         ]);
 
@@ -108,10 +108,10 @@ public sealed class WorldEngineRiotTests
         [
             new WorldTurnStartingEvent(player1.Id),
             new WorldStackMovementRestoredEvent(stack.Id, 20),
+            new WorldTurnStartedEvent(player1.Id),
             new WorldCityRiotEndedEvent(city.Id),
             new WorldStackMovementConsumedEvent(stack.Id, 0),
             new WorldUnitDamagedEvent(new WorldUnitGroup.Stack(stack.Id), new WorldUnitId("leader"), 40, SourcePlayerId: null),
-            new WorldTurnStartedEvent(player1.Id),
             new WorldTurnResourcesGeneratedEvent(player1.Id, new WorldResourceSet(100, 0, 0, 25, 0, 0))
         ]);
 
@@ -577,8 +577,8 @@ public sealed class WorldEngineRiotTests
         engine.CheckCommand(new WorldStartGameCommand(),
         [
             new WorldTurnStartingEvent(new WorldPlayerId(1)),
-            new WorldCityRiotTurnsDecreasedEvent(new WorldFortificationId("city"), 1),
             new WorldTurnStartedEvent(new WorldPlayerId(1)),
+            new WorldCityRiotTurnsDecreasedEvent(new WorldFortificationId("city"), 1),
             new WorldTurnResourcesGeneratedEvent(new WorldPlayerId(1), new WorldResourceSet(100, 0, 0, 25, 0, 0))
         ]);
 
@@ -588,9 +588,9 @@ public sealed class WorldEngineRiotTests
             new WorldRoundEndedEvent(),
             new WorldRoundStartedEvent(),
             new WorldTurnStartingEvent(new WorldPlayerId(1)),
+            new WorldTurnStartedEvent(new WorldPlayerId(1)),
             new WorldCityRiotEndedEvent(new WorldFortificationId("city")),
             new WorldUnitDamagedEvent(new WorldUnitGroup.Fortification(new WorldFortificationId("city")), new WorldUnitId("soldier"), 80, SourcePlayerId: null),
-            new WorldTurnStartedEvent(new WorldPlayerId(1)),
             new WorldTurnResourcesGeneratedEvent(new WorldPlayerId(1), new WorldResourceSet(100, 0, 0, 25, 0, 0))
         ]);
 
@@ -658,9 +658,9 @@ public sealed class WorldEngineRiotTests
         [
             new WorldTurnEndedEvent(player1.Id),
             new WorldTurnStartingEvent(neutral.Id),
+            new WorldTurnStartedEvent(neutral.Id),
             new WorldCityRiotEndedEvent(city.Id),
             new WorldUnitDamagedEvent(new WorldUnitGroup.Fortification(city.Id), new WorldUnitId("soldier"), 80, SourcePlayerId: null),
-            new WorldTurnStartedEvent(neutral.Id),
             new WorldTurnResourcesGeneratedEvent(neutral.Id, WorldResourceSet.Empty)
         ]);
 
@@ -730,8 +730,8 @@ public sealed class WorldEngineRiotTests
         [
             new WorldTurnStartingEvent(player1.Id),
             new WorldStackMovementRestoredEvent(stack.Id, 20),
-            new WorldCityRiotTurnsDecreasedEvent(city.Id, 1),
             new WorldTurnStartedEvent(player1.Id),
+            new WorldCityRiotTurnsDecreasedEvent(city.Id, 1),
             new WorldTurnResourcesGeneratedEvent(player1.Id, new WorldResourceSet(100, 0, 0, 25, 0, 0))
         ]);
 
@@ -775,9 +775,9 @@ public sealed class WorldEngineRiotTests
         engine.CheckCommand(new WorldStartGameCommand(),
         [
             new WorldTurnStartingEvent(player1.Id),
+            new WorldTurnStartedEvent(player1.Id),
             new WorldCityRiotEndedEvent(city.Id),
             new WorldUnitDamagedEvent(new WorldUnitGroup.Fortification(city.Id), new WorldUnitId("soldier"), 1, SourcePlayerId: null),
-            new WorldTurnStartedEvent(player1.Id),
             new WorldTurnResourcesGeneratedEvent(player1.Id, new WorldResourceSet(100, 0, 0, 25, 0, 0))
         ]);
 
@@ -883,5 +883,88 @@ public sealed class WorldEngineRiotTests
                 new WorldUnitGroup.Stack(visitingStack.Id),
                 new WorldItemId("Orb")),
             WorldCommandError.CityRioting);
+    }
+
+    [Test]
+    public void SummonAtEntranceTest()
+    {
+        WorldMap map = TestHelpers.SimpleMap(6, 6);
+
+        UnitDefinition summon = TestHelpers.SimpleUnitDefinition("summon", maxHitpoints: 100, initiative: 50, damage: 10) with
+        {
+            Category = UnitCategory.Summon,
+            Leadership = 1,
+            MovementPoints = 20,
+            Lifetime = 1
+        };
+        UnitDefinition soldier = TestHelpers.SimpleUnitDefinition("soldier", maxHitpoints: 100, initiative: 40, damage: 5);
+        WorldCityDefinition cityDefinition = TestHelpers.SimpleCityDefinition(new WorldCityDefinitionId(WorldRace.Human, 1), WorldResourceSet.Empty);
+
+        WorldPlayer player1 = TestHelpers.SimplePlayer(new WorldPlayerId(1), WorldRace.Human, map);
+
+        WorldCity city = TestHelpers.SimpleCity(
+                new WorldFortificationId("city"),
+                cityDefinition,
+                player1.Id,
+                new WorldPosition(3, 3),
+                new UnitGrid<WorldUnit>.Builder()
+                    .Place(TestHelpers.SimpleUnit(new WorldUnitId("soldier"), soldier), GridPosition.FrontBottom, false)
+                    .Build()) with
+            {
+                RiotTurns = 1
+            };
+
+        WorldStack stack = TestHelpers.SimpleStack(
+                new WorldStackId("stack"),
+                player1.Id,
+                city.Entrance,
+                TestHelpers.SingleUnitGrid(new WorldUnitId("summon"), summon),
+                movementPoints: 20) with
+            {
+                ExpirationTurn = 1
+            };
+
+        WorldEngine engine = new TestWorldEngineBuilder()
+            .WithMap(map)
+            .WithDefinition(summon)
+            .WithDefinition(soldier)
+            .WithDefinition(cityDefinition)
+            .WithDefinition(TestHelpers.SimpleLord(player1.LordId, player1.Race, LordCategory.Mage))
+            .WithPlayer(player1)
+            .WithCity(city)
+            .WithStack(stack)
+            .Build();
+
+        WorldState before = engine.State;
+
+        engine.CheckCommand(new WorldStartGameCommand(),
+        [
+            new WorldTurnStartingEvent(player1.Id),
+            new WorldStackMovementRestoredEvent(stack.Id, 20),
+            new WorldStackDestroyedEvent(stack.Id, Destroyer: null, DestroyerPlayerId: null),
+            new WorldTurnStartedEvent(player1.Id),
+            new WorldCityRiotEndedEvent(city.Id),
+            new WorldUnitDamagedEvent(new WorldUnitGroup.Fortification(city.Id), new WorldUnitId("soldier"), 80, SourcePlayerId: null),
+            new WorldTurnResourcesGeneratedEvent(player1.Id, new WorldResourceSet(100, 0, 0, 25, 0, 0))
+        ]);
+
+        UnitGrid<WorldUnit> riotedGarrison = new UnitGrid<WorldUnit>.Builder()
+            .Place(TestHelpers.SimpleUnit(new WorldUnitId("soldier"), soldier) with { Hitpoints = 80 }, GridPosition.FrontBottom, false)
+            .Build();
+
+        Assert.That(engine.State, Is.EqualTo(before with
+        {
+            Players = before.Players.SetItem(player1.Id, player1 with { Resources = new WorldResourceSet(100, 0, 0, 25, 0, 0) }),
+            Stacks = before.Stacks.Remove(stack.Id),
+            Fortifications = before.Fortifications.SetItem(city.Id, city with
+            {
+                Garrison = riotedGarrison,
+                RiotTurns = 0
+            }),
+            ScenarioState = before.ScenarioState with
+            {
+                DestroyedStacks = [new ScenarioDestroyedStack(stack.Id, DestroyerPlayerId: null, SourceTemplateId: null)]
+            }
+        }));
     }
 }
