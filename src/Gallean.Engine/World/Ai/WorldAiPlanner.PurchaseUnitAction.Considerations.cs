@@ -10,12 +10,16 @@ internal sealed partial class WorldAiPlanner
             private const int AnyReachScore = MaxScore * 4 / 5;
             private const int AffordabilityPenalty = MaxScore / 2;
             private const int RepetitionPenalty = MaxScore * 3 / 4;
+            private const int OccupancyPenalty = MaxScore / 2;
 
             private static readonly UtilityScore.ResponseCurve AffordabilityCurve =
                 new UtilityScore.ResponseCurve.Polynomial(Slope: -AffordabilityPenalty, Exponent: 1, XShift: 0, YShift: MaxScore);
 
             private static readonly UtilityScore.ResponseCurve RepetitionCurve =
                 new UtilityScore.ResponseCurve.Polynomial(Slope: -RepetitionPenalty, Exponent: 1, XShift: 0, YShift: MaxScore);
+
+            private static readonly UtilityScore.ResponseCurve OccupancyCurve =
+                new UtilityScore.ResponseCurve.Polynomial(Slope: -OccupancyPenalty, Exponent: 1, XShift: 0, YShift: MaxScore);
 
             public static UtilityScore.Consideration Affordability(UnitDefinition unit, WorldPlayer player)
             {
@@ -45,6 +49,11 @@ internal sealed partial class WorldAiPlanner
                 }
 
                 return UtilityScore.Ratio(owned, composition.Count, RepetitionCurve);
+            }
+
+            public static UtilityScore.Consideration Occupancy(int occupied, int capacity)
+            {
+                return UtilityScore.Ratio(occupied, capacity, OccupancyCurve);
             }
         }
     }

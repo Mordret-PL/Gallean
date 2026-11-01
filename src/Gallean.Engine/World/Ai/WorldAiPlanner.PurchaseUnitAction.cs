@@ -14,40 +14,40 @@ internal sealed partial class WorldAiPlanner
             }
 
             WorldPlan plan = WorldPlan.For(state);
-            WorldCapital? capital = plan.GetCapital(playerId);
-
-            if (capital is null)
-            {
-                return null;
-            }
-
             WorldPlayer player = state.Players[playerId];
             WorldRaceDefinition race = Context.Engine.Definitions.GetRace(player.Race);
-            List<UnitDefinitionId> composition = CollectComposition(plan, capital);
             WorldPurchaseUnitCommand? bestCommand = null;
             int bestScore = 0;
 
-            foreach (UnitDefinitionId unitId in race.Units)
+            foreach (WorldFortification fortification in state.Fortifications.Values)
             {
-                UnitDefinition unit = Context.Engine.Definitions.GetUnit(unitId);
-                GridPosition? position = FindFreePosition(capital.Garrison, unit.IsLarge);
-
-                if (position is null)
+                if (fortification.Owner == playerId)
                 {
-                    continue;
-                }
+                    List<UnitDefinitionId> composition = CollectComposition(plan, fortification);
+                    int occupied = GarrisonCalculator.GetOccupiedCapacity(fortification.Garrison, Context.Engine.Definitions);
+                    int capacity = GarrisonCalculator.GetTotalCapacity(fortification, Context.Engine.Globals);
 
-                WorldPurchaseUnitCommand command = new(capital.Id, unitId, position);
-                WorldCommandResult commandResult = command.Execute(state, Context.Engine);
-
-                if (!commandResult.Failed)
-                {
-                    int score = ScorePurchase(unit, player, composition);
-
-                    if (score > bestScore)
+                    foreach (UnitDefinitionId unitId in race.Units)
                     {
-                        bestCommand = command;
-                        bestScore = score;
+                        UnitDefinition unit = Context.Engine.Definitions.GetUnit(unitId);
+                        GridPosition? position = FindFreePosition(fortification.Garrison, unit.IsLarge);
+
+                        if (position is not null)
+                        {
+                            WorldPurchaseUnitCommand command = new(fortification.Id, unitId, position);
+                            WorldCommandResult commandResult = command.Execute(state, Context.Engine);
+
+                            if (!commandResult.Failed)
+                            {
+                                int score = ScorePurchase(unit, player, composition, occupied, capacity);
+
+                                if (score > bestScore)
+                                {
+                                    bestCommand = command;
+                                    bestScore = score;
+                                }
+                            }
+                        }
                     }
                 }
             }
@@ -60,30 +60,36 @@ internal sealed partial class WorldAiPlanner
             return MakePlan(bestScore, bestCommand, memory);
         }
 
-        private static int ScorePurchase(UnitDefinition unit, WorldPlayer player, List<UnitDefinitionId> composition)
+        private static int ScorePurchase(
+            UnitDefinition unit,
+            WorldPlayer player,
+            List<UnitDefinitionId> composition,
+            int occupied,
+            int capacity)
         {
             List<UtilityScore.Consideration> considerations =
             [
                 Considerations.Affordability(unit, player),
                 Considerations.ReachPreference(unit),
-                Considerations.Repetition(unit, composition)
+                Considerations.Repetition(unit, composition),
+                Considerations.Occupancy(occupied, capacity)
             ];
 
             return UtilityScore.Combine(considerations);
         }
 
-        private static List<UnitDefinitionId> CollectComposition(WorldPlan plan, WorldCapital capital)
+        private static List<UnitDefinitionId> CollectComposition(WorldPlan plan, WorldFortification fortification)
         {
             List<UnitDefinitionId> result = [];
 
-            foreach ((WorldUnit unit, _) in capital.Garrison.GetUnits())
+            foreach ((WorldUnit unit, _) in fortification.Garrison.GetUnits())
             {
                 result.Add(unit.DefinitionId);
             }
 
-            WorldStack? stack = plan.GetStackAt(capital.Entrance);
+            WorldStack? stack = plan.GetStackAt(fortification.Entrance);
 
-            if (stack is not null && stack.OwnerId == capital.OwnerId)
+            if (stack is not null && stack.OwnerId == fortification.Owner)
             {
                 foreach ((WorldUnit unit, _) in stack.Units.GetUnits())
                 {

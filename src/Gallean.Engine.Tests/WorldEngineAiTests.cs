@@ -901,6 +901,76 @@ public sealed class WorldEngineAiTests
     }
 
     [Test]
+    public void PurchaseGarrisonTest()
+    {
+        WorldMap map = TestHelpers.BuildMap([
+            "^^^^^^^^^^^^",
+            "^^^^^^^^^^^^",
+            "^^^^^^^^^^^^",
+            "^^^^^^^^^^^^",
+            "^^^^^^^^^..."
+        ]);
+
+        UnitDefinition soldierDefinition = TestHelpers.SimpleUnitDefinition("soldier", maxHitpoints: 60, initiative: 40, damage: 15) with
+        {
+            PurchaseCost = new WorldResourceSet(100, 0, 0, 0, 0, 0)
+        };
+
+        WorldPlayer player = TestHelpers.SimplePlayer(new WorldPlayerId(1), WorldRace.Undead, map) with
+        {
+            Resources = new WorldResourceSet(100, 0, 0, 0, 0, 0)
+        };
+
+        WorldCapital capital = TestHelpers.SimpleCapital(
+            new WorldFortificationId("capital"),
+            player.Id,
+            new WorldPosition(4, 4),
+            TestHelpers.SingleUnitGrid(new WorldUnitId("guard"), soldierDefinition));
+
+        WorldCityDefinition cityDefinition = TestHelpers.SimpleCityDefinition(new WorldCityDefinitionId(WorldRace.Neutral, 1), WorldResourceSet.Empty);
+        WorldCity city = TestHelpers.SimpleCity(
+            new WorldFortificationId("city"),
+            cityDefinition,
+            player.Id,
+            new WorldPosition(9, 4),
+            UnitGrid<WorldUnit>.Empty);
+
+        WorldRaceDefinition race = new(
+            WorldRace.Undead,
+            new GlobalTextId("Undead"),
+            WorldResourceSet.Empty,
+            WorldMapTerrain.Undead,
+            true,
+            35,
+            null,
+            [],
+            [],
+            [soldierDefinition.Id],
+            [],
+            []);
+
+        (GameSession session, IEngineContext engine) = new TestWorldEngineBuilder()
+            .WithMap(map)
+            .WithDefinition(soldierDefinition)
+            .WithDefinition(cityDefinition)
+            .WithDefinition(TestHelpers.SimpleLord(player.LordId, player.Race, LordCategory.Warrior))
+            .WithPlayer(player)
+            .WithCapital(capital)
+            .WithCity(city)
+            .WithSubrace(TestHelpers.NeutralSubrace)
+            .WithRace(race)
+            .BuildSession();
+
+        TestWorldAiRunner runner = new(session, engine);
+
+        IReadOnlyList<TestWorldAiRunner.Trace> report = runner.PlayTurn();
+
+        Assert.That(TestWorldAiTraceFormatter.Format(report), Is.EqualTo([
+            "[P0 400] Purchase soldier -> city (0, 0)"
+        ]));
+    }
+
+    [Test]
     public void PurchaseUnownedUnitTest()
     {
         WorldMap map = TestHelpers.BuildMap([
@@ -961,7 +1031,7 @@ public sealed class WorldEngineAiTests
         IReadOnlyList<TestWorldAiRunner.Trace> report = runner.PlayTurn();
 
         Assert.That(TestWorldAiTraceFormatter.Format(report), Is.EqualTo([
-            "[P0 600] Purchase ranged -> capital (0, 1)"
+            "[P0 550] Purchase ranged -> capital (0, 1)"
         ]));
     }
 
@@ -1109,7 +1179,7 @@ public sealed class WorldEngineAiTests
         IReadOnlyList<TestWorldAiRunner.Trace> report = runner.PlayTurn();
 
         Assert.That(TestWorldAiTraceFormatter.Format(report), Is.EqualTo([
-            "[P0 600] Purchase large -> capital (0, 2)"
+            "[P0 500] Purchase large -> capital (0, 2)"
         ]));
     }
 
