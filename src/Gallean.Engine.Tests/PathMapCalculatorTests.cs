@@ -551,7 +551,7 @@ public sealed class PathMapCalculatorTests
     }
 
     [Test]
-    public void WaterOnlyCoastalCostTest()
+    public void WaterOnlyCoastBlockedTest()
     {
         WorldMap map = TestHelpers.BuildMap([
             "~~."
@@ -559,12 +559,9 @@ public sealed class PathMapCalculatorTests
 
         WorldMovementCalculator.MovementProfile profile = new(MoveAbility: UnitMoveAbility.None, IsWaterOnly: true, IsLeaderDead: false, IsThief: false);
         WorldPlan plan = WorldPlan.For(CreateEmptyState(map));
-        WorldPath path = Assert.NotNull(plan.GetPath(new WorldPosition(0, 0), new WorldPosition(1, 0), CreateFullFog(map), profile, WorldMovementLimit.Unlimited));
+        WorldPath? path = plan.GetPath(new WorldPosition(0, 0), new WorldPosition(1, 0), CreateFullFog(map), profile, WorldMovementLimit.Unlimited);
 
-        Assert.That(SerializePathMap(map, path), Is.EqualTo([
-            "SE."
-        ]));
-        Assert.That(path.Cost, Is.EqualTo(6));
+        Assert.That(path, Is.Null);
     }
 
     [Test]

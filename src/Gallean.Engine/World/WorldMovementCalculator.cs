@@ -51,12 +51,7 @@ internal static class WorldMovementCalculator
 
         if (profile.IsWaterOnly)
         {
-            if (cell.Terrain != WorldMapTerrain.Water)
-            {
-                return int.MaxValue;
-            }
-
-            return IsDeepWater(map, position) ? 2 : 6;
+            return IsDeepWater(map, position) ? 2 : int.MaxValue;
         }
 
         if ((profile.MoveAbility & UnitMoveAbility.Flying) == UnitMoveAbility.Flying)
@@ -116,14 +111,11 @@ internal static class WorldMovementCalculator
         {
             for (int dx = -1; dx <= 1; dx++)
             {
-                if (dx != 0 || dy != 0)
-                {
-                    WorldPosition neighbor = new(position.X + dx, position.Y + dy);
+                WorldPosition tile = new(position.X + dx, position.Y + dy);
 
-                    if (map.IsValidPosition(neighbor) && map.GetCellAt(neighbor).Terrain != WorldMapTerrain.Water)
-                    {
-                        return false;
-                    }
+                if (map.IsValidPosition(tile) && map.GetCellAt(tile).Terrain != WorldMapTerrain.Water)
+                {
+                    return false;
                 }
             }
         }

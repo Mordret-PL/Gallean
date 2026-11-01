@@ -644,6 +644,11 @@ public sealed class WorldEngineMovementTests
             WorldCommandError.TargetUnpassable
         );
 
+        engine.CheckCommandError(
+            new WorldMoveStackCommand(new WorldStackId("Stack1"), new WorldPosition(2, 1)),
+            WorldCommandError.TargetUnpassable
+        );
+
         engine.CheckCommand(
             new WorldMoveStackCommand(new WorldStackId("Stack1"), new WorldPosition(2, 0)),
             [
@@ -662,6 +667,80 @@ public sealed class WorldEngineMovementTests
                     Position = new WorldPosition(2, 0),
                     Direction = WorldStackDirection.SouthEast,
                     MovementPoints = 0
+                })
+            }));
+    }
+
+    [Test]
+    public void WaterOnlyAttackCoastTest()
+    {
+        WorldMap map = TestHelpers.BuildMap([
+            "~~~~",
+            "~~~~",
+            "~~~."
+        ]);
+
+        WorldPlayer player1 = TestHelpers.SimplePlayer(new WorldPlayerId(1), WorldRace.Undead, map);
+        WorldPlayer player2 = TestHelpers.SimplePlayer(new WorldPlayerId(2), WorldRace.Human, map);
+
+        UnitDefinition leader = TestHelpers.SimpleLeaderDefinition(
+                TestHelpers.SimpleUnitDefinition("leader", maxHitpoints: 100, initiative: 50, damage: 10),
+                movementPoints: 6, leadership: 6) with
+            {
+                IsWaterOnly = true
+            };
+
+        UnitDefinition enemyLeader = TestHelpers.SimpleLeaderDefinition(
+            TestHelpers.SimpleUnitDefinition("enemyLeader", maxHitpoints: 100, initiative: 50, damage: 10),
+            movementPoints: 6, leadership: 6);
+
+        WorldStack stack = TestHelpers.SimpleStack(
+            new WorldStackId("stack"),
+            player1.Id,
+            new WorldPosition(1, 1),
+            TestHelpers.SingleUnitGrid(new WorldUnitId("leader"), leader),
+            movementPoints: 6);
+
+        WorldStack enemyStack = TestHelpers.SimpleStack(
+            new WorldStackId("enemyStack"),
+            player2.Id,
+            new WorldPosition(2, 1),
+            TestHelpers.SingleUnitGrid(new WorldUnitId("leader2"), enemyLeader),
+            movementPoints: 6);
+
+        WorldEngine engine = new TestWorldEngineBuilder()
+            .WithMap(map)
+            .WithDefinition(leader)
+            .WithDefinition(enemyLeader)
+            .WithDefinition(TestHelpers.SimpleLord(player1.LordId, player1.Race, LordCategory.Warrior))
+            .WithPlayer(player1)
+            .WithDefinition(TestHelpers.SimpleLord(player2.LordId, player2.Race, LordCategory.Warrior))
+            .WithPlayer(player2)
+            .WithStack(stack)
+            .WithStack(enemyStack)
+            .Build();
+
+        _ = engine.DispatchCommand(new WorldStartGameCommand());
+
+        BattleState expectedBattleState = new BattleStateBuilder(new TestGameDefinitionProviderBuilder().AddUnit(leader).AddUnit(enemyLeader).Build())
+            .Add(TestHelpers.SimpleBattleUnit(new BattleUnitId(0), new WorldUnitId("leader"), leader.Id, BattleSide.Attacker, hitpoints: 100), GridPosition.FrontBottom)
+            .Add(TestHelpers.SimpleBattleUnit(new BattleUnitId(1), new WorldUnitId("leader2"), enemyLeader.Id, BattleSide.Defender, hitpoints: 100), GridPosition.FrontBottom)
+            .Build(BattleModifiers.None);
+
+        engine.CheckCommand(
+            new WorldMoveStackCommand(stack.Id, enemyStack.Position),
+            [
+                new WorldStackMovementConsumedEvent(stack.Id, 3),
+                new WorldStackBattleStartedEvent(stack.Id, enemyStack.Id, enemyStack.Position, expectedBattleState, IsDuel: false)
+            ]);
+
+        Assert.That(engine.State, Is.EqualTo(
+            engine.State with
+            {
+                Stacks = engine.State.Stacks.SetItem(stack.Id, stack with
+                {
+                    Direction = WorldStackDirection.SouthEast,
+                    MovementPoints = 3
                 })
             }));
     }

@@ -369,7 +369,7 @@ public sealed class WorldMovementCalculatorTests
 
         Assert.That(costs, Is.EqualTo([
             2,
-            6,
+            int.MaxValue,
             int.MaxValue
         ]));
     }
@@ -421,7 +421,7 @@ public sealed class WorldMovementCalculatorTests
     public void IsPassableWaterOnlyTest()
     {
         WorldMap map = TestHelpers.BuildMap([
-            ".+^~="
+            ".+^~~~="
         ]);
 
         WorldMovementCalculator.MovementProfile profile = new(MoveAbility: UnitMoveAbility.None, IsWaterOnly: true, IsLeaderDead: false, IsThief: false);
@@ -432,14 +432,18 @@ public sealed class WorldMovementCalculatorTests
             WorldMovementCalculator.IsPassable(map, new WorldPosition(1, 0), profile),
             WorldMovementCalculator.IsPassable(map, new WorldPosition(2, 0), profile),
             WorldMovementCalculator.IsPassable(map, new WorldPosition(3, 0), profile),
-            WorldMovementCalculator.IsPassable(map, new WorldPosition(4, 0), profile)
+            WorldMovementCalculator.IsPassable(map, new WorldPosition(4, 0), profile),
+            WorldMovementCalculator.IsPassable(map, new WorldPosition(5, 0), profile),
+            WorldMovementCalculator.IsPassable(map, new WorldPosition(6, 0), profile)
         ];
 
         Assert.That(passability, Is.EqualTo([
             false,
             false,
             false,
+            false,
             true,
+            false,
             false
         ]));
     }

@@ -192,6 +192,16 @@ public sealed class WorldPlan
 
         if (cost >= int.MaxValue)
         {
+            WorldStack? targetStack = GetStackAt(to);
+
+            if (targetStack is not null)
+            {
+                cost = WorldMovementCalculator.GetMovementCost(state.Map, from, profile);
+            }
+        }
+
+        if (cost >= int.MaxValue)
+        {
             return int.MaxValue;
         }
 
@@ -550,8 +560,9 @@ public sealed class WorldPlan
             for (int x = 0; x < state.Map.Width; x++)
             {
                 WorldPosition position = new(x, y);
+                WorldStack? stack = GetStackAt(position);
 
-                if (!WorldMovementCalculator.IsPassable(state.Map, position, profile))
+                if (stack is null && !WorldMovementCalculator.IsPassable(state.Map, position, profile))
                 {
                     cells.Set(x, y);
                 }

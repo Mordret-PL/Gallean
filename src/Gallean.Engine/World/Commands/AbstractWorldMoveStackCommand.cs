@@ -18,13 +18,14 @@ public abstract partial record AbstractWorldMoveStackCommand(WorldStackId StackI
         }
 
         WorldMovementCalculator.MovementProfile profile = WorldMovementCalculator.GetMovementProfile(stack, context.Definitions);
+        WorldPlan plan = WorldPlan.For(state);
+        WorldStack? targetStack = plan.GetStackAt(TargetPosition);
 
-        if (!WorldMovementCalculator.IsPassable(state.Map, TargetPosition, profile))
+        if (targetStack is null && !WorldMovementCalculator.IsPassable(state.Map, TargetPosition, profile))
         {
             return WorldCommandResult.Fail(WorldCommandError.TargetUnpassable);
         }
 
-        WorldPlan plan = WorldPlan.For(state);
         WorldFortification? currentFortification = plan.GetFortificationAt(stack.Position);
 
         if (currentFortification is not null && FortificationCalculator.IsRioting(currentFortification))
@@ -45,8 +46,6 @@ public abstract partial record AbstractWorldMoveStackCommand(WorldStackId StackI
         {
             return WorldCommandResult.Fail(WorldCommandError.CityRioting);
         }
-
-        WorldStack? targetStack = plan.GetStackAt(TargetPosition);
 
         if (targetStack is not null && !DiplomacyCalculator.IsHostile(state, stack.OwnerId, targetStack.OwnerId))
         {
