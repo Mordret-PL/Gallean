@@ -5,8 +5,9 @@ internal static class TrainingCalculator
     public sealed record TrainingInfo(
         int CurrentExperience,
         int MaxExperience,
-        int AffordableExperience,
+        int TrainableExperience,
         WorldResourceSet CostPerExperience,
+        WorldResourceSet Cost,
         WorldCommandError? Error);
 
     public static TrainingInfo GetTrainingInfo(WorldUnit unit, WorldResourceSet available, IEngineContext context)
@@ -18,12 +19,16 @@ internal static class TrainingCalculator
         int affordableExperience = GetAffordableExperience(available, costs.TrainingCost);
         int experience = Math.Min(maxExperience - unit.Experience, affordableExperience);
 
-        return new TrainingInfo(
-            unit.Experience,
-            maxExperience,
-            affordableExperience,
-            costs.TrainingCost,
-            GetError(unit, maxExperience, costs.TrainingCost, experience, context));
+        WorldCommandError? error = GetError(unit, maxExperience, costs.TrainingCost, experience, context);
+
+        if (error is not null)
+        {
+            return new TrainingInfo(unit.Experience, maxExperience, 0, costs.TrainingCost, WorldResourceSet.Empty, error);
+        }
+
+        WorldResourceSet cost = ResourceSetCalculator.Multiply(costs.TrainingCost, experience);
+
+        return new TrainingInfo(unit.Experience, maxExperience, experience, costs.TrainingCost, cost, null);
     }
 
     private static WorldCommandError? GetError(

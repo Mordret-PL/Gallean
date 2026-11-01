@@ -10,8 +10,9 @@ public sealed record WorldGetTrainerInfoCommand(WorldStackId StackId) : IWorldCo
         WorldUnitId UnitId,
         int CurrentExperience,
         int MaxExperience,
-        int AffordableExperience,
+        int TrainableExperience,
         WorldResourceSet CostPerExperience,
+        WorldResourceSet Cost,
         WorldCommandError? Error);
 
     public sealed record Result(ImmutableArray<TrainingUnit> Units)
@@ -78,8 +79,9 @@ public sealed record WorldGetTrainerInfoCommand(WorldStackId StackId) : IWorldCo
             unit.Id,
             training.CurrentExperience,
             training.MaxExperience,
-            training.AffordableExperience,
+            training.TrainableExperience,
             training.CostPerExperience,
+            training.Cost,
             training.Error);
     }
 }

@@ -284,23 +284,21 @@ internal sealed partial class TrainerTabViewModel
     private TrainerInspectedUnitViewModel BuildInspectedUnit(WorldUnit unit, WorldGetTrainerInfoCommand.TrainingUnit trainingUnit)
     {
         UnitExperience experience = GameModel.Stats.GetWorldUnitExperience(unit);
-        int trainableExperience = GetTrainableExperience(trainingUnit);
 
         return new TrainerInspectedUnitViewModel(
             new AssetSpriteKey.UnitEventPortrait(ScenarioEventPortraitId.Unit(unit.DefinitionId)),
             UnitNameResolver.Resolve(unit, GameModel.Definitions, GameModel.Texts),
-            ResolveTrainingGain(trainingUnit, trainableExperience),
+            ResolveTrainingGain(trainingUnit, trainingUnit.TrainableExperience),
             ResolveBarExperience(experience),
             experience.NextLevel,
-            trainableExperience,
-            FormatExperience(experience, trainableExperience),
+            trainingUnit.TrainableExperience,
+            FormatExperience(experience, trainingUnit.TrainableExperience),
             experience.IsMaximumLevel,
             experience.IsPendingUpgrade);
     }
 
     private SiteOfferViewModel BuildOffer(WorldUnit unit, WorldGetTrainerInfoCommand.TrainingUnit trainingUnit)
     {
-        int experience = GetTrainableExperience(trainingUnit);
         string? unavailableReason;
 
         if (trainingUnit.Error is { } error)
@@ -320,8 +318,6 @@ internal sealed partial class TrainerTabViewModel
             GameModel.Texts,
             GameModel.Stats);
 
-        WorldResourceSet cost = MultiplyCost(trainingUnit.CostPerExperience, experience);
-
         return new SiteOfferViewModel(
             new IconViewModel.Unit(new AssetSpriteKey.UnitPortrait(unit.DefinitionId)),
             details,
@@ -329,19 +325,8 @@ internal sealed partial class TrainerTabViewModel
             TrSpans("Level {0:*}", unit.Level),
             string.Empty,
             Tr("Train"),
-            new OfferStatusViewModel(new OfferPriceViewModel(cost, WorldState.Players[ViewPlayerId].Resources), unavailableReason),
+            new OfferStatusViewModel(new OfferPriceViewModel(trainingUnit.Cost, WorldState.Players[ViewPlayerId].Resources), unavailableReason),
             TrainCommand);
-    }
-
-    private static WorldResourceSet MultiplyCost(WorldResourceSet cost, int factor)
-    {
-        return new WorldResourceSet(
-            cost.Gold * factor,
-            cost.LifeMana * factor,
-            cost.DeathMana * factor,
-            cost.RuneMana * factor,
-            cost.InfernalMana * factor,
-            cost.GroveMana * factor);
     }
 
     private static string ResolveTrainingGain(WorldGetTrainerInfoCommand.TrainingUnit trainingUnit, int experience)
@@ -385,18 +370,6 @@ internal sealed partial class TrainerTabViewModel
         else
         {
             return string.Create(CultureInfo.CurrentCulture, $"{experience.Current}/{experience.NextLevel}");
-        }
-    }
-
-    private static int GetTrainableExperience(WorldGetTrainerInfoCommand.TrainingUnit trainingUnit)
-    {
-        if (trainingUnit.Error is null)
-        {
-            return Math.Min(trainingUnit.MaxExperience - trainingUnit.CurrentExperience, trainingUnit.AffordableExperience);
-        }
-        else
-        {
-            return 0;
         }
     }
 

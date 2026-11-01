@@ -66,21 +66,24 @@ public sealed class WorldEngineGetTrainerInfoTests
                 new WorldUnitId("leader"),
                 CurrentExperience: 0,
                 MaxExperience: 999,
-                AffordableExperience: 0,
+                TrainableExperience: 0,
+                WorldResourceSet.Empty,
                 WorldResourceSet.Empty,
                 WorldCommandError.UnitTrainingForbidden),
             new WorldGetTrainerInfoCommand.TrainingUnit(
                 new WorldUnitId("soldier"),
                 CurrentExperience: 900,
                 MaxExperience: 999,
-                AffordableExperience: 40,
+                TrainableExperience: 40,
                 new WorldResourceSet(5, 0, 0, 0, 0, 0),
+                new WorldResourceSet(200, 0, 0, 0, 0, 0),
                 Error: null),
             new WorldGetTrainerInfoCommand.TrainingUnit(
                 new WorldUnitId("guardian"),
                 CurrentExperience: 0,
                 MaxExperience: 999,
-                AffordableExperience: 0,
+                TrainableExperience: 0,
+                WorldResourceSet.Empty,
                 WorldResourceSet.Empty,
                 WorldCommandError.UnitTrainingForbidden)
         ])));

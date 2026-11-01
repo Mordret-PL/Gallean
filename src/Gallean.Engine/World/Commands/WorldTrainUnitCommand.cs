@@ -33,16 +33,14 @@ public sealed record WorldTrainUnitCommand(
             return WorldCommandResult.Fail(error);
         }
 
-        int experience = Math.Min(training.MaxExperience - training.CurrentExperience, training.AffordableExperience);
-
         return WorldCommandResult.Success(
             Empty.Value,
             [
                 new WorldStackUnitTrainedEvent(
                     StackId,
                     UnitId,
-                    training.CurrentExperience + experience,
-                    ResourceSetCalculator.Multiply(training.CostPerExperience, experience))
+                    training.CurrentExperience + training.TrainableExperience,
+                    training.Cost)
             ]);
     }
 }
