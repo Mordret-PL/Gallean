@@ -1263,6 +1263,42 @@ public sealed class VisualTests
     }
 
     [AvaloniaTest]
+    public async Task WorldItemsLootTest()
+    {
+        using Sandbox sb = Sandbox.Create();
+
+        GameModel gameModel = LoadScenario(null);
+
+        (GameViewModel gameViewModel, GameView window) = Initialize(sb, BaseWidth, BaseHeight);
+
+        await gameModel.World.DispatchCommandAsync(new WorldStartGameCommand());
+        WorldScreenViewModel world = new(gameModel, gameViewModel, new RandomProvider(0));
+        gameViewModel.ShowScreen(world);
+
+        await WaitForWorldAsync(window);
+
+        gameViewModel.OpenScreen(LootScreenViewModel.CreateForItems(
+            gameModel,
+            new WorldInventory(
+            [
+                new WorldItem(new WorldItemId("Item0001"), new ItemDefinitionId("G000IG0001"), Charges: null),
+                new WorldItem(new WorldItemId("Item0002"), new ItemDefinitionId("G000IG0002"), Charges: null),
+                new WorldItem(new WorldItemId("Item0003"), new ItemDefinitionId("G000IG0005"), Charges: null),
+                new WorldItem(new WorldItemId("Item0004"), new ItemDefinitionId("G000IG0006"), Charges: null),
+                new WorldItem(new WorldItemId("Item0005"), new ItemDefinitionId("G000IG0015"), Charges: null),
+                new WorldItem(new WorldItemId("Item0006"), new ItemDefinitionId("G000IG0016"), Charges: null),
+                new WorldItem(new WorldItemId("Item0007"), new ItemDefinitionId("G000IG0018"), Charges: null),
+                new WorldItem(new WorldItemId("Item0008"), new ItemDefinitionId("G000IG0024"), Charges: null),
+                new WorldItem(new WorldItemId("Item0009"), new ItemDefinitionId("G000IG1001"), Charges: null),
+                new WorldItem(new WorldItemId("Item0010"), new ItemDefinitionId("G000IG1002"), Charges: null),
+                new WorldItem(new WorldItemId("Item0011"), new ItemDefinitionId("G000IG2001"), Charges: null),
+                new WorldItem(new WorldItemId("Item0012"), new ItemDefinitionId("G000IG3001"), Charges: null)
+            ])));
+
+        await CaptureAsync(window);
+    }
+
+    [AvaloniaTest]
     public async Task WorldSpellLootTest()
     {
         using Sandbox sb = Sandbox.Create();

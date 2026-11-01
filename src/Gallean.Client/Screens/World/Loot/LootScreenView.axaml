@@ -28,19 +28,21 @@
         </Grid>
       </local:ModalPanel.Footer>
 
-      <StackPanel Spacing="10">
-        <TextBlock Text="{Binding Text}"
-                   Classes="body"
-                   Foreground="{StaticResource PrimaryTextBrush}"
-                   TextWrapping="Wrap"
-                   TextAlignment="Center" />
+      <Grid RowDefinitions="Auto,*">
+        <StackPanel Grid.Row="0" Spacing="10">
+          <TextBlock Text="{Binding Text}"
+                     Classes="body"
+                     Foreground="{StaticResource PrimaryTextBrush}"
+                     TextWrapping="Wrap"
+                     TextAlignment="Center" />
 
-        <ContentControl Content="{Binding Resources}"
-                        Classes="body"
-                        HorizontalAlignment="Center"
-                        Foreground="{StaticResource PrimaryTextBrush}" />
+          <ContentControl Content="{Binding Resources}"
+                          Classes="body"
+                          HorizontalAlignment="Center"
+                          Foreground="{StaticResource PrimaryTextBrush}" />
+        </StackPanel>
 
-        <ScrollViewer Classes="list" IsVisible="{Binding Items.Length, Converter={x:Static local:GreaterThanConverter.Instance}, ConverterParameter=0}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
+        <ScrollViewer Grid.Row="1" Margin="0,10,0,0" Classes="list" IsVisible="{Binding Items.Length, Converter={x:Static local:GreaterThanConverter.Instance}, ConverterParameter=0}" VerticalScrollBarVisibility="Auto" HorizontalScrollBarVisibility="Disabled">
           <ItemsControl ItemsSource="{Binding Items}" Padding="6">
             <ItemsControl.ItemTemplate>
               <DataTemplate x:DataType="local:LootItem">
@@ -58,7 +60,7 @@
             </ItemsControl.ItemTemplate>
           </ItemsControl>
         </ScrollViewer>
-      </StackPanel>
+      </Grid>
 
     </local:ModalPanel>
   </Border>
