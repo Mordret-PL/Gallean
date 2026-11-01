@@ -49,20 +49,54 @@ internal sealed partial class WorldAiPlanner
 
         private WorldCastSpellCommand? FindTargetedCast(WorldState state, WorldPlayerId playerId, List<WorldSpellDefinition> spells)
         {
+            WorldPlayer player = state.Players[playerId];
+            List<WorldSpellDefinition> attackSpells = [];
+            List<WorldSpellDefinition> healSpells = [];
+
             foreach (WorldSpellDefinition spell in spells)
             {
-                WorldAiSpellEffectType? type = spell.Effect.Accept(WorldAiSpellEffectTypeVisitor.Instance, Empty.Value);
+                WorldAiSpellEffectType? type = GetSpellEffectType(spell);
 
-                IEnumerable<WorldStack> targets = type switch
+                List<WorldSpellDefinition>? group = type switch
                 {
-                    WorldAiSpellEffectType.Summon => EnumerateCityThreats(state, playerId),
-                    WorldAiSpellEffectType.Attack => EnumerateCityThreats(state, playerId),
-                    WorldAiSpellEffectType.Heal => EnumerateWoundedStacks(state, playerId),
-                    WorldAiSpellEffectType.Boost => [],
-                    WorldAiSpellEffectType.Invisibility => [],
-                    null => []
+                    WorldAiSpellEffectType.Attack => attackSpells,
+                    WorldAiSpellEffectType.Summon => attackSpells,
+                    WorldAiSpellEffectType.Heal => healSpells,
+                    WorldAiSpellEffectType.Boost => null,
+                    WorldAiSpellEffectType.Invisibility => null,
+                    null => null
                 };
 
+                if (group is not null)
+                {
+                    group.Add(spell);
+                }
+            }
+
+            WorldCastSpellCommand? command = null;
+
+            if (IsAttackCastAllowed(player, attackSpells))
+            {
+                command = FindCast(state, attackSpells, EnumerateCityThreats(state, playerId));
+
+                if (command is null && Context.Engine.Random.Next(100) < Context.Engine.Globals.AiRandomCastChance)
+                {
+                    command = FindCast(state, attackSpells, EnumerateEnemyStacks(state, playerId));
+                }
+            }
+
+            if (command is null)
+            {
+                command = FindCast(state, healSpells, EnumerateWoundedStacks(state, playerId));
+            }
+
+            return command;
+        }
+
+        private WorldCastSpellCommand? FindCast(WorldState state, List<WorldSpellDefinition> spells, IEnumerable<WorldStack> targets)
+        {
+            foreach (WorldSpellDefinition spell in spells)
+            {
                 foreach (WorldStack target in targets)
                 {
                     WorldCastSpellCommand command = new(spell.Id, new WorldSpellTarget(target.Position, 1));
@@ -76,6 +110,19 @@ internal sealed partial class WorldAiPlanner
             }
 
             return null;
+        }
+
+        private static bool IsAttackCastAllowed(WorldPlayer player, List<WorldSpellDefinition> enemySpells)
+        {
+            foreach (WorldSpellDefinition spell in enemySpells)
+            {
+                if (player.TurnActions.SpellCasts.ContainsKey(spell.Id))
+                {
+                    return false;
+                }
+            }
+
+            return enemySpells.Count > 0;
         }
 
         private bool IsGlobalCastAllowed(WorldPlayer player, List<WorldSpellDefinition> globalSpells)
@@ -97,7 +144,7 @@ internal sealed partial class WorldAiPlanner
 
             foreach (WorldSpellDefinition spell in spells)
             {
-                WorldAiSpellEffectType? type = spell.Effect.Accept(WorldAiSpellEffectTypeVisitor.Instance, Empty.Value);
+                WorldAiSpellEffectType? type = GetSpellEffectType(spell);
 
                 bool castSpell = type switch
                 {
@@ -124,6 +171,11 @@ internal sealed partial class WorldAiPlanner
             return null;
         }
 
+        private static WorldAiSpellEffectType? GetSpellEffectType(WorldSpellDefinition spell)
+        {
+            return spell.Effect.Accept(WorldAiSpellEffectTypeVisitor.Instance, Empty.Value);
+        }
+
         private static int CompareSpellLevel(WorldSpellDefinition left, WorldSpellDefinition right)
         {
             return right.Level.CompareTo(left.Level);
@@ -147,6 +199,19 @@ internal sealed partial class WorldAiPlanner
                             yield return stack;
                         }
                     }
+                }
+            }
+        }
+
+        private static IEnumerable<WorldStack> EnumerateEnemyStacks(WorldState state, WorldPlayerId playerId)
+        {
+            foreach (WorldStack stack in state.Stacks.Values)
+            {
+                WorldPlayer owner = state.Players[stack.OwnerId];
+
+                if (DiplomacyCalculator.IsHostile(state, playerId, stack.OwnerId) && WorldHelpers.IsRacePlayable(owner.Race))
+                {
+                    yield return stack;
                 }
             }
         }
