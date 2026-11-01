@@ -120,7 +120,7 @@ public sealed class WorldEngineThiefDuelTests
     }
 
     [Test]
-    public void BystandersSurviveTest()
+    public void NonLeadersSurviveTest()
     {
         WorldMap map = TestHelpers.SimpleMap(6, 6);
 
