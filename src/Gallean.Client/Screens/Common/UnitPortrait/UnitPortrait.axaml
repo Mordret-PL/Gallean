@@ -28,8 +28,8 @@
                   <local:SpriteVisual x:Name="PART_Face" Classes="portrait" SpriteKey="{TemplateBinding FaceKey}" Stretch="UniformToFill" />
                   <Image x:Name="PART_GrayOverlay" Source="{x:Static local:SolidTexture.Gray}" Stretch="Fill" RenderOptions.BitmapBlendingMode="Saturation" />
                   <local:AnimatedFill x:Name="PART_LostHitpoints"
-                                      Current="{TemplateBinding Hitpoints}"
-                                      Maximum="{TemplateBinding MaxHitpoints}"
+                                      Current="{Binding Hitpoints, RelativeSource={RelativeSource TemplatedParent}}"
+                                      Maximum="{Binding MaxHitpoints, RelativeSource={RelativeSource TemplatedParent}}"
                                       Animation="{TemplateBinding HitpointsAnimation}" />
                   <Panel x:Name="PART_Overlay" IsVisible="{TemplateBinding Overlay, Converter={x:Static ObjectConverters.IsNotNull}}">
                     <Rectangle Fill="{TemplateBinding Overlay}" OpacityMask="{StaticResource UnitPortraitOverlayMaskGradientBrush}" />
